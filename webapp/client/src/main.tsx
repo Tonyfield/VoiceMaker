@@ -1,0 +1,111 @@
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { ConfigProvider, theme as antdTheme } from "antd";
+import App from "./App";
+import { AuthProvider } from "./auth";
+import { ThemeProvider, useTheme } from "./theme";
+import { I18nProvider, useI18n } from "./i18n";
+import { DEFAULT_ANTD_LOCALE, loadAntdLocale } from "./i18n/antdLocale";
+import { textOnPrimary, textPrimaryOn } from "./themes";
+import "./index.css";
+
+function ThemedApp() {
+  const { palette } = useTheme();
+  const { locale } = useI18n();
+  // antd 组件内置文案按需加载：默认中文，切换到其他语种时再拉取对应语言包。
+  const [antdLocale, setAntdLocale] = useState(DEFAULT_ANTD_LOCALE);
+  useEffect(() => {
+    let cancelled = false;
+    void loadAntdLocale(locale.pack).then((loaded) => {
+      if (!cancelled) setAntdLocale(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [locale.pack]);
+  // 实心主色上的文字：按对比度选择黑/白，避免浅色主题下按钮文字看不清
+  const onPrimary = textOnPrimary(palette.primary);
+  // 主色作为「背景上的文字/描边」（链接、选中态、outlined 按钮文字）时的安全色
+  const primaryText = textPrimaryOn(palette.surface, palette.primary);
+  // 错误/危险色：按对比度调整（留余量，抵消深色算法的派生）
+  const errorColor = textPrimaryOn(palette.surface, "#FF4D4F", 6.2);
+
+  // 主题 CSS 变量：同时挂到 :root —— Modal / Drawer / Tooltip 等经 portal 渲染到 body，
+  // 不在本组件的 div 内，挂到 :root 才能让这些弹层也跟随主题（否则会回退到浅色默认值）。
+  const vars = useMemo(
+    () =>
+      ({
+        "--vc-bg": palette.background,
+        "--vc-surface": palette.surface,
+        "--vc-text": palette.text,
+        "--vc-muted": palette.muted,
+        "--vc-primary": palette.primary,
+        "--vc-primary-text": primaryText,
+        "--vc-on-primary": onPrimary,
+        "--vc-accent": palette.accent ?? palette.primary,
+        "--vc-error": errorColor,
+        "--vc-border": palette.dark ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.08)",
+        "--vc-code-bg": palette.dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.035)",
+        "--vc-code-text": palette.dark ? "rgba(255,255,255,0.78)" : "rgba(0,0,0,0.72)",
+      }) as CSSProperties,
+    [palette, primaryText, onPrimary, errorColor]
+  );
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const entries = Object.entries(vars) as Array<[string, string]>;
+    for (const [key, value] of entries) {
+      if (value !== undefined && value !== null) root.style.setProperty(key, String(value));
+    }
+    return () => {
+      for (const [key] of entries) root.style.removeProperty(key);
+    };
+  }, [vars]);
+
+  return (
+    <ConfigProvider
+      locale={antdLocale}
+      direction={locale.rtl ? "rtl" : "ltr"}
+      theme={{
+        algorithm: palette.dark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        token: {
+          fontSize: 14,
+          colorPrimary: palette.primary,
+          colorInfo: palette.primary,
+          colorLink: primaryText,
+          // 实心主色（主按钮等）上的文字颜色：按对比度选黑/白
+          colorTextLightSolid: onPrimary,
+          // 主色作为文字/描边时的安全色（浅色主题下会适当加深）
+          colorPrimaryText: primaryText,
+          // 错误/危险按钮的红色同样按对比度调整（留更高余量，抵消深色算法的派生）
+          colorError: errorColor,
+          colorBgLayout: palette.background,
+          colorBgContainer: palette.surface,
+          colorText: palette.text,
+          colorTextSecondary: palette.muted,
+          // 显式给出可见的控件描边，避免浅色方案下按钮/输入框/下拉框边缘看不清
+          colorBorder: palette.dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.22)",
+          colorBorderSecondary: palette.dark ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.10)",
+          borderRadius: 12,
+        },
+      }}
+    >
+      <div style={{ ...vars, minHeight: "100vh", background: palette.background, color: palette.text }}>
+        <BrowserRouter>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </BrowserRouter>
+      </div>
+    </ConfigProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <ThemeProvider>
+    <I18nProvider>
+      <ThemedApp />
+    </I18nProvider>
+  </ThemeProvider>
+);

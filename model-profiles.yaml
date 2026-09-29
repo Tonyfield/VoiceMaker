@@ -1,0 +1,447 @@
+# =============================================================================
+# model-profiles.yaml — TTS 模型唯一配置真源（数据驱动）
+# =============================================================================
+# 新增一个 TTS 模型 = 在此文件添加一个 profile + 在 src/models/ 写一个 adapter。
+# 文档(/api/usage)、API 参数、前端表单、分段策略、docker 服务信息全部自动生成。
+#
+# 字段说明：
+#   label / description / version  展示信息（文档、目录）
+#   enabled                        是否在服务目录中暴露
+#   adapter                        执行逻辑适配器（src/models/loader._ADAPTERS 的键）
+#   aliases                        模型别名
+#   source                         模型缓存相对路径（model.cache_dir 之下）
+#   capabilities                   能力差异声明（文档能力矩阵 + API 校验依据）
+#     requires_reference           是否必须上传参考音频（voice sample 克隆）
+#     voice_instruction            是否接受自然语言风格/音色描述
+#     emotion_text                 是否支持情绪文本控制（运行时启用）
+#     reference_text               是否接受参考音频对应文本（ICL/continuation）
+#     speaker_presets              是否支持预设说话人
+#     languages                    支持语言；空列表表示由运行时决定
+#     min_reference_audio_seconds  参考音频最短秒数
+#   api_params                     模型特有 API 参数（text/language/reference_audio
+#                                  由 capabilities 自动推导，无需声明）
+#     name/type/required/default   基本属性（type: text|textarea|number|select|checkbox|file）
+#     label/help/placeholder       文档与表单展示
+#     guidance                     文档中的参数详细说明（替代原 usage_guidance/*.json）
+#     options                      select 类型的可选值
+#   segmentation                   分段策略
+#     estimator                    token 估算策略: plain_chars|cjk_mixed|latin_words
+#   runtime                        模型构造器参数（键名 = adapter 构造器参数名）
+#   service                        docker 服务部署信息（端口/容器/依赖文件）
+# =============================================================================
+
+defaults:
+  capabilities:
+    requires_reference: true
+    voice_instruction: false
+    emotion_text: false
+    reference_text: false
+    speaker_presets: false
+    languages: []
+    min_reference_audio_seconds: 1.0
+  segmentation:
+    estimator: cjk_mixed
+    force_chunk_chars: 80
+  service:
+    host: 10.0.13.209
+    internal_port: 20200
+
+profiles:
+
+  # ----------------------------------------------------------- Coqui XTTS v2
+  xtts:
+    label: Coqui XTTS v2
+    description: Stable multilingual voice cloning served by the dedicated XTTS API container.
+    enabled: true
+    adapter: xtts
+    version: xtts_v2
+    aliases: [xtts_v2, coqui]
+    source: tts_models/multilingual/multi-dataset/xtts_v2
+    capabilities:
+      requires_reference: false
+      languages: []   # 多语言，由运行时决定
+      min_reference_audio_seconds: 6.0
+    segmentation:
+      max_chars_per_segment: 220
+      max_estimated_duration_seconds: 22
+      max_input_tokens: 400
+      target_input_tokens: 320
+      force_chunk_chars: 110
+      notes: >-
+        XTTS runtime hard-limits generation to 400 input tokens. The target
+        limit keeps a safety margin for Chinese text.
+    runtime:
+      model_name: tts_models/multilingual/multi-dataset/xtts_v2
+      device: auto
+      speaker_wav_min_duration: 6
+    service:
+      port: 20201
+      container: tts-model-xtts
+      requirements: requirements-model-xtts-extra.txt
+      image_env: VOICECLONER_XTTS_IMAGE_TAG
+
+  # ------------------------------------------------------ F5-TTS Emilia ZH-EN
+  f5_tts_emilia_zh_en:
+    label: F5-TTS Emilia ZH-EN
+    description: Zero-shot voice cloning served by the dedicated F5-TTS API container.
+    enabled: true
+    adapter: f5_tts_emilia_zh_en
+    version: F5TTS_v1_Base
+    aliases: [f5_tts, f5]
+    source: tts_models/SWivid/F5-TTS_Emilia-ZH-EN
+    capabilities:
+      reference_text: true
+      languages: [zh-cn, en]
+    segmentation:
+      max_chars_per_segment: 240
+      max_estimated_duration_seconds: 24
+      max_input_tokens: 300
+      target_input_tokens: 220
+      force_chunk_chars: 100
+      notes: >-
+        F5-TTS does not publish a strict text token cap in this build. The
+        service exposes a conservative operational safety ceiling.
+    api_params:
+      - name: reference_text
+        type: textarea
+        label: 参考文本
+        required: false
+        rows: 2
+        placeholder: 可选。若你知道参考音频对应文本，可填写以提升稳定性。
+        help: F5-TTS 可额外接收参考文本；未填写时会继续使用服务默认设置。
+        guidance: 参考文本需与参考音频逐字对应，可显著提升零样本克隆的稳定性与相似度。
+    runtime:
+      model_name: F5TTS_v1_Base
+      device: auto
+      checkpoint_file: model_1250000.safetensors
+      vocab_file: vocab.txt
+      reference_text: ""
+      remove_silence: false
+      nfe_step: 32
+      speed: 1.0
+      cfg_strength: 2.0
+      sway_sampling_coef: -1.0
+    service:
+      port: 20202
+      container: tts-model-f5
+      requirements: requirements-model-f5-extra.txt
+      image_env: VOICECLONER_F5_IMAGE_TAG
+
+  # ---------------------------------------------------------- IndexTTS-2 家族
+  index_tts_2:
+    label: IndexTTS-2
+    description: Expressive zero-shot voice cloning served by the dedicated IndexTTS-2 API container.
+    enabled: true
+    adapter: index_tts_2
+    version: IndexTTS-2
+    aliases: [indextts2, index_tts2]
+    source: tts_models/IndexTeam/IndexTTS-2
+    capabilities:
+      emotion_text: true
+      languages: [zh-cn, en]
+    segmentation:
+      estimator: plain_chars
+      max_chars_per_segment: 180
+      max_estimated_duration_seconds: 20
+      max_input_tokens: 120
+      target_input_tokens: 100
+      force_chunk_chars: 80
+      notes: >-
+        IndexTTS-2 exposes max_text_tokens_per_segment in runtime
+        configuration. The target limit reserves headroom for punctuation
+        and control tokens.
+    runtime:
+      device: auto
+      repo_path: ""
+      cfg_file: config.yaml
+      use_fp16: false
+      use_cuda_kernel: false
+      use_deepspeed: false
+      use_accel: false
+      use_torch_compile: false
+      emo_alpha: 0.6
+      use_random: false
+      use_emo_text: false
+      default_emo_text: ""
+      max_text_tokens_per_segment: 120
+    service:
+      port: 20212
+      container: tts-model-index-v2
+      requirements: requirements-model-index-extra.txt
+      image_env: VOICECLONER_INDEX_IMAGE_TAG
+
+  index_tts_2_5:
+    _extends_: index_tts_2
+    label: IndexTTS-2.5
+    description: Expressive zero-shot voice cloning served by the dedicated IndexTTS-2.5 API container.
+    version: indextts-2.5
+    aliases: [indextts2.5, index_tts2.5]
+    source: tts_models/IndexTeam/IndexTTS-2.5
+    segmentation:
+      notes: >-
+        IndexTTS-2.5 exposes max_text_tokens_per_segment in runtime
+        configuration. The target limit reserves headroom for punctuation
+        and control tokens.
+    service:
+      port: 20213
+      container: tts-model-index-v2_5
+
+  # ---------------------------------------------------------- MOSS-TTS 家族
+  moss_tts_delay:
+    label: MOSS-TTS Delay 8B
+    description: Production-oriented MOSS zero-shot voice cloning with optional continuation cloning.
+    enabled: true
+    adapter: moss_tts_delay
+    version: MOSS-TTS
+    aliases: [moss_tts, moss_delay]
+    source: tts_models/OpenMOSS-Team/MOSS-TTS
+    capabilities:
+      reference_text: true
+      languages: [auto, zh, en, de, es, fr, ja, it, hu, ko, ru, fa, ar, pl, pt, cs, da, sv, el, tr]
+      min_reference_audio_seconds: 1.0
+    segmentation:
+      max_chars_per_segment: 360
+      max_estimated_duration_seconds: 32
+      max_input_tokens: 1200
+      target_input_tokens: 880
+      force_chunk_chars: 140
+      notes: >-
+        MOSS-TTS Delay 是生产优先的长文本语音克隆架构，长上下文稳定性更强；
+        填写参考文本时将启用 continuation cloning。
+    api_params:
+      - name: reference_text
+        type: textarea
+        label: 参考音频文本
+        required: false
+        rows: 2
+        placeholder: 可选。填写后启用 continuation cloning，模型会沿参考音频继续说。
+        help: 为空时走常规零样本克隆；填写参考音频原文时，服务会切换到 continuation 模式。
+        guidance: continuation cloning 要求参考文本是参考音频的完整原文，模型将从其末尾继续生成。
+      - name: tokens
+        type: number
+        label: 目标音频 tokens
+        required: false
+        min: 1
+        step: 1
+        placeholder: 可选，1 秒约等于 12.5 token
+        help: 显式控制目标音频时长；若不填写，则只使用 max_new_tokens 作为上限。
+        guidance: 用于精确对齐字幕或配乐场景；设置过小会截断文本。
+      - name: max_new_tokens
+        type: number
+        label: 生成上限 tokens
+        required: false
+        default: 4096
+        min: 256
+        step: 1
+      - name: audio_temperature
+        type: number
+        label: 音频温度
+        required: false
+        default: 1.7
+        min: 0.1
+        step: 0.05
+      - name: audio_top_p
+        type: number
+        label: Audio Top-P
+        required: false
+        default: 0.8
+        min: 0.1
+        max: 1.0
+        step: 0.01
+      - name: audio_top_k
+        type: number
+        label: Audio Top-K
+        required: false
+        default: 25
+        min: 1
+        step: 1
+      - name: audio_repetition_penalty
+        type: number
+        label: 重复惩罚
+        required: false
+        default: 1.0
+        min: 0.5
+        step: 0.05
+    runtime:
+      model_name: OpenMOSS-Team/MOSS-TTS
+      device: auto
+      dtype: auto
+      attn_implementation: auto
+      min_reference_audio_seconds: 1.0
+      max_new_tokens: 4096
+      audio_temperature: 1.7
+      audio_top_p: 0.8
+      audio_top_k: 25
+      audio_repetition_penalty: 1.0
+    service:
+      port: 20207
+      container: tts-model-moss-delay
+      requirements: requirements-moss-extra.txt
+      image_env: VOICECLONER_MOSS_DELAY_IMAGE_TAG
+
+  moss_tts_local:
+    _extends_: moss_tts_delay
+    label: MOSS-TTS Local 1.7B
+    description: Lightweight MOSS voice cloning with strong objective quality and optional continuation cloning.
+    adapter: moss_tts_local
+    version: MOSS-TTS-Local-Transformer
+    aliases: [moss_local]
+    source: tts_models/OpenMOSS-Team/MOSS-TTS-Local-Transformer
+    segmentation:
+      max_chars_per_segment: 320
+      max_estimated_duration_seconds: 28
+      max_input_tokens: 960
+      target_input_tokens: 720
+      force_chunk_chars: 120
+      notes: >-
+        MOSS-TTS Local 是更轻量的语音克隆架构，适合研究、评测与较快迭代；
+        填写参考文本可启用 continuation cloning。
+    runtime:
+      model_name: OpenMOSS-Team/MOSS-TTS-Local-Transformer
+      audio_temperature: 1.0
+      audio_top_p: 0.95
+      audio_top_k: 50
+      audio_repetition_penalty: 1.1
+    service:
+      port: 20208
+      container: tts-model-moss-local
+      image_env: VOICECLONER_MOSS_LOCAL_IMAGE_TAG
+    api_params: []   # 继承 moss_tts_delay 后按本模型默认值覆盖见 runtime
+
+  # ---------------------------------------------------------- Qwen3-TTS 家族
+  qwen3_tts_voice_design:
+    label: Qwen3-TTS VoiceDesign
+    description: Text-only voice design served by the dedicated Qwen3-TTS API container.
+    enabled: true
+    adapter: qwen3_tts_voice_design
+    version: Qwen3-TTS-12Hz-1.7B-VoiceDesign
+    aliases: [qwen3_tts, qwen3_voice_design]
+    source: tts_models/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign
+    capabilities:
+      requires_reference: false
+      voice_instruction: true
+      min_reference_audio_seconds: 0.0
+      languages: [auto, zh-cn, en, ja, ko, de, fr, ru, pt, es, it]
+    segmentation:
+      max_chars_per_segment: 320
+      max_estimated_duration_seconds: 28
+      max_input_tokens: 800
+      target_input_tokens: 640
+      force_chunk_chars: 120
+      notes: >-
+        Qwen3 VoiceDesign accepts longer textual instructions and content.
+        The service exposes a conservative safety ceiling for long-form synthesis.
+    api_params:
+      - name: voice_instruction
+        type: textarea
+        label: 音色描述
+        required: true
+        rows: 3
+        placeholder: 例：用惊讶但逐渐慌张的语气说，气口更短一些。
+        help: VoiceDesign 只接受文本和音色描述，不接收参考音频。
+        guidance: 描述建议包含音色特质、情绪和语速三类信息；支持中文与英文描述。
+    runtime:
+      model_name: Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign
+      device: auto
+      dtype: auto
+      attn_implementation: ""
+      default_instruction: Speak with a clear, expressive, natural narration voice suitable for long-form listening.
+      max_new_tokens: 2048
+      top_k: 50
+      top_p: 1.0
+      temperature: 0.9
+      repetition_penalty: 1.05
+    service:
+      port: 20204
+      container: tts-model-qwen
+      requirements: requirements-qwen-extra.txt
+      image_env: VOICECLONER_QWEN_VOICE_DESIGN_IMAGE_TAG
+
+  qwen3_tts_custom_voice:
+    _extends_: qwen3_tts_voice_design
+    label: Qwen3-TTS CustomVoice
+    description: Official 9-speaker CustomVoice model with optional natural-language style control.
+    adapter: qwen3_tts_custom_voice
+    version: Qwen3-TTS-12Hz-1.7B-CustomVoice
+    aliases: [qwen3_custom_voice]
+    source: tts_models/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+    capabilities:
+      speaker_presets: true
+    api_params:
+      - name: speaker
+        type: select
+        label: 官方预设音色
+        required: true
+        default: Vivian
+        options:
+          - {value: Vivian, label: Vivian, description: 明亮、略带锋芒的年轻中文女声。}
+          - {value: Serena, label: Serena, description: 温和柔软的年轻中文女声。}
+          - {value: Uncle_Fu, label: Uncle_Fu, description: 低沉醇厚、成熟的中文男声。}
+          - {value: Dylan, label: Dylan, description: 自然清亮的北京口音青年男声。}
+          - {value: Eric, label: Eric, description: 略带沙哑明亮感的成都男声。}
+          - {value: Ryan, label: Ryan, description: 节奏感鲜明的英文男声。}
+          - {value: Aiden, label: Aiden, description: 晴朗清晰的美式英文男声。}
+          - {value: Ono_Anna, label: Ono_Anna, description: 轻快灵动的日语女声。}
+          - {value: Sohee, label: Sohee, description: 情绪饱满的韩语女声。}
+        help: 官方 1.7B CustomVoice 提供 9 个预设说话人，推荐优先使用其母语以获得最佳效果。
+        guidance: speaker 与 voice_instruction 可组合使用；更换 speaker 后建议同步调整语言代码。
+      - name: voice_instruction
+        type: textarea
+        label: 控制指令
+        required: false
+        rows: 3
+        placeholder: 可选。例：用紧张但克制的语气说，尾音收得更干净。
+        help: 可追加风格、情绪、语速等自然语言控制。
+        guidance: 与 speaker 组合时作为附加控制；留空则使用所选预设音色的默认风格。
+    runtime:
+      model_name: Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+      default_speaker: Vivian
+    service:
+      port: 20205
+      container: tts-model-qwen-custom
+      image_env: VOICECLONER_QWEN_CUSTOM_VOICE_IMAGE_TAG
+
+  qwen3_tts_base:
+    _extends_: qwen3_tts_voice_design
+    label: Qwen3-TTS Base
+    description: Rapid voice cloning from reference audio with optional x-vector-only mode.
+    adapter: qwen3_tts_base
+    version: Qwen3-TTS-12Hz-1.7B-Base
+    aliases: [qwen3_base]
+    source: tts_models/Qwen/Qwen3-TTS-12Hz-1.7B-Base
+    capabilities:
+      requires_reference: true
+      voice_instruction: false
+      reference_text: true
+      min_reference_audio_seconds: 1.0
+    segmentation:
+      max_chars_per_segment: 280
+      max_estimated_duration_seconds: 26
+      max_input_tokens: 720
+      target_input_tokens: 560
+      force_chunk_chars: 110
+      notes: >-
+        Qwen3 Base 通过参考音频快速克隆音色；默认 ICL 模式需要参考文本，
+        也可启用 x-vector only 简化输入。
+    api_params:
+      - name: reference_text
+        type: textarea
+        label: 参考音频文本
+        required: false
+        rows: 2
+        placeholder: 未启用 x-vector only 时建议填写参考音频对应文本。
+        help: 若不勾选 x-vector only，则该字段应填写参考音频原文，以使用 ICL 模式获得更高克隆质量。
+        guidance: ICL 模式（参考文本 + 参考音频）克隆质量显著高于 x-vector only，建议总是填写。
+      - name: x_vector_only_mode
+        type: checkbox
+        label: 仅使用说话人向量
+        required: false
+        default: false
+        help: 启用后无需参考文本，但克隆质量通常低于完整 ICL 模式。
+        guidance: 适合参考音频没有对应文本、或追求快速合成的场景。
+    runtime:
+      model_name: Qwen/Qwen3-TTS-12Hz-0.6B-Base
+    service:
+      port: 20206
+      container: tts-model-qwen-base
+      image_env: VOICECLONER_QWEN_BASE_IMAGE_TAG

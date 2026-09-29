@@ -1,0 +1,237 @@
+name: voicecloner
+
+x-gpu-config: &gpu-config
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            device_ids: ["1"]
+            capabilities: [gpu]
+
+x-tts-model-service: &tts-model-service
+  restart: unless-stopped
+  init: true
+
+  <<: *gpu-config
+
+  environment:
+    PYTHONUNBUFFERED: "1"
+    COQUI_TOS_AGREED: "1"
+    VOICECLONER_MODEL_SERVICE_PORT: "20200"
+
+  healthcheck:
+    test:
+      [
+        "CMD",
+        "curl",
+        "-fsS",
+        "http://127.0.0.1:20200/api/health"
+      ]
+    interval: 30s
+    timeout: 10s
+    retries: 5
+    start_period: 45s
+
+  volumes:
+    - ../config.yaml:/app/config.yaml:ro
+    - ../model-profiles.yaml:/app/model-profiles.yaml:ro
+    - log:/app/log
+    - models:/app/models
+
+services:
+  tts-voice-cloner-infra:
+    profiles: ["build-only"]
+    image: tts-voice-cloner-infra:latest
+    build:
+      context: ..
+      dockerfile: docker/infra.Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements-service.txt
+
+  tts-model-infra:
+    profiles: ["build-only"]
+    image: tts-model-infra:latest
+    build:
+      context: ..
+      dockerfile: docker/infra.Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements-model-common.txt
+
+  tts-voice-cloner:
+    image: tts-voice-cloner:${VOICECLONER_APP_IMAGE_TAG:?VOICECLONER_APP_IMAGE_TAG is required}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_INFRA_IMAGE: tts-voice-cloner-infra:latest
+    container_name: tts-voice-cloner
+    restart: unless-stopped
+    init: true
+    ports:
+      - "20100:20100"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      COQUI_TOS_AGREED: "1"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:20100/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
+      - ../model-profiles.yaml:/app/model-profiles.yaml:ro
+      - data:/app/data
+      - log:/app/log
+      - models:/app/models
+
+  tts-model-xtts:
+    <<: *tts-model-service
+    image: tts-model-xtts:${VOICECLONER_XTTS_IMAGE_TAG:?VOICECLONER_XTTS_IMAGE_TAG is required}
+    container_name: tts-model-xtts
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-model-xtts-extra.txt
+    ports:
+      - "20201:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: xtts
+
+
+  tts-model-f5:
+    <<: *tts-model-service
+    image: tts-model-f5:${VOICECLONER_F5_IMAGE_TAG:?VOICECLONER_F5_IMAGE_TAG is required}
+    container_name: tts-model-f5
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-model-f5-extra.txt
+    ports:
+      - "20202:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: f5_tts_emilia_zh_en
+
+
+  tts-model-index-v2:
+    <<: *tts-model-service
+    image: tts-model-index:${VOICECLONER_INDEX_IMAGE_TAG:?VOICECLONER_INDEX_IMAGE_TAG is required}
+    container_name: tts-model-index-v2
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-model-index-extra.txt
+    ports:
+      - "20212:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: index_tts_2
+
+  tts-model-index-v2_5:
+    <<: *tts-model-service
+    image: tts-model-index:${VOICECLONER_INDEX_IMAGE_TAG:?VOICECLONER_INDEX_IMAGE_TAG is required}
+    container_name: tts-model-index-v2_5
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-model-index-extra.txt
+    ports:
+      - "20213:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: index_tts_2_5
+
+  tts-model-moss-delay:
+    <<: *tts-model-service
+    image: tts-model-moss-delay:${VOICECLONER_MOSS_DELAY_IMAGE_TAG:?VOICECLONER_MOSS_DELAY_IMAGE_TAG is required}
+    container_name: tts-model-moss-delay
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-moss-extra.txt
+    ports:
+      - "20207:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: moss_tts_delay
+
+
+  tts-model-moss-local:
+    <<: *tts-model-service
+    image: tts-model-moss-local:${VOICECLONER_MOSS_LOCAL_IMAGE_TAG:?VOICECLONER_MOSS_LOCAL_IMAGE_TAG is required}
+    container_name: tts-model-moss-local
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-moss-extra.txt
+    ports:
+      - "20208:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: moss_tts_local
+
+
+  tts-model-qwen:
+    <<: *tts-model-service
+    image: tts-model-qwen:${VOICECLONER_QWEN_VOICE_DESIGN_IMAGE_TAG:?VOICECLONER_QWEN_VOICE_DESIGN_IMAGE_TAG is required}
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-qwen-extra.txt
+    container_name: tts-model-qwen
+    ports:
+      - "20204:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: qwen3_tts_voice_design
+
+
+  tts-model-qwen-custom:
+    <<: *tts-model-service
+    container_name: tts-model-qwen-custom
+    image: tts-model-qwen-custom:${VOICECLONER_QWEN_CUSTOM_VOICE_IMAGE_TAG:?VOICECLONER_QWEN_CUSTOM_VOICE_IMAGE_TAG is required}
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-qwen-extra.txt
+    ports:
+      - "20205:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: qwen3_tts_custom_voice
+
+
+  tts-model-qwen-base:
+    <<: *tts-model-service
+    container_name: tts-model-qwen-base
+    image: tts-model-qwen-base:${VOICECLONER_QWEN_BASE_IMAGE_TAG:?VOICECLONER_QWEN_BASE_IMAGE_TAG is required}
+    build:
+      context: ..
+      dockerfile: docker/model-service.Dockerfile
+      args:
+        MODEL_INFRA_IMAGE: tts-model-infra:latest
+        REQUIREMENTS_FILE: requirements-qwen-extra.txt
+    ports:
+      - "20206:20200"
+    environment:
+      VOICECLONER_MODEL_NAME: qwen3_tts_base
+
+
+volumes:
+  data:
+    name: voicecloner-data
+  log:
+    name: voicecloner-log
+  models:
+    name: voicecloner-models

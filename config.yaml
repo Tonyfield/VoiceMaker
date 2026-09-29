@@ -1,0 +1,50 @@
+# =============================================================================
+# config.yaml — 全局服务配置（模型数据见 model-profiles.yaml）
+# =============================================================================
+
+app:
+  name: VoiceCloner
+  version: 0.5.4
+
+model:
+  # Canonical adapter id used when the user does not override the model.
+  default: xtts
+  # Shared cache root for downloaded or preloaded model files.
+  cache_dir: ./models
+
+model_services:
+  # Default request timeout when the main service calls a dedicated model API.
+  request_timeout_seconds: 600
+  # Optional per-model base_url overrides. Endpoints are generated from
+  # model-profiles.yaml service.port entries; only add entries here to override.
+  # endpoints:
+  #   index_tts_2_5:
+  #     base_url: http://10.0.13.209:20213
+
+output:
+  default_dir: ./data/output
+  format: wav
+  sample_rate: 24000
+
+voice_profiles:
+  storage_dir: ./data/voices
+
+logging:
+  level: DEBUG
+  dir: ./log
+  retention: 30 days
+  max_size: 50 MB
+
+gui:
+  host: 0.0.0.0
+  port: 7860
+  share: false
+
+service:
+  host: 0.0.0.0
+  port: 20100
+  data_dir: ./data
+  max_chars_per_segment: 280
+  max_estimated_duration_seconds: 30
+  reset_interrupted_tasks_on_start: true
+  poll_interval_seconds: 3

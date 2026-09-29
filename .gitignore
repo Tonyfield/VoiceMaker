@@ -1,36 +1,99 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ============================================================
+# VoiceCloner
+# ============================================================
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# ---- 日志 ----
+log/
+logs/
+*.log
+*.log.*
 
-# testing
-/coverage
+# ---- 输出 / 生成结果（TTS 音频、分段结果、导出等）----
+/out*
+*.wav
+*.pcm
 
-# next.js
-/.next/
-/out/
+# ---- 语料 / 书籍 / 文本工作目录（仅仓库根目录）----
+/book*
+/text*
 
-# production
-/build
+# ---- 测试文件 ----
 
-# misc
-.DS_Store
-*.pem
+# ---- 临时 / 备份文件 ----
+*.bak
+*.tmp
+*.temp
+*.orig
+*.rej
+*.swp
+*.swo
+*~
 
-# debug
+# ---- 构建产物 ----
+build/
+dist/
+
+webapp/server/data
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+.eggs/
+
+# ---- Node / 前端 ----
+node_modules/
+.vite/
+coverage/
+*.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# local env files
-.env*.local
-.env
+# ---- 环境变量 / 密钥 ----
+.env*
+!.env.example
+/docker/.env*
+*.pem
+*.key
+*.pfx
 
-# vercel
-.vercel
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.trae/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ---- 模型 / 缓存（大文件）----
+models/
+checkpoints/
+.cache/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.gguf
+
+# ---- 压缩包 / 大文件 ----
+*.zip
+*.gz
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar

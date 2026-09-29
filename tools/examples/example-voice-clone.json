@@ -1,0 +1,18 @@
+{
+  "tts-model": "qwen3-tts-12hz-0.6b-base",
+  "reference_audio": "../samples/voice-lyx-30s.mp3",
+  "segments": [
+    {
+      "text": "这是用克隆声音合成的第一段语音。",
+      "desc": "使用参考音频克隆声音"
+    },
+    {
+      "text": "克隆的声音听起来和原声音非常相似。",
+      "desc": "展示克隆效果"
+    },
+    {
+      "text": "我们可以通过调整参数来改变声音的某些特征。",
+      "desc": "说明参数调整"
+    }
+  ]
+}

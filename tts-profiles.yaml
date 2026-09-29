@@ -1,0 +1,161 @@
+models:
+  qwen3-tts-12hz-0.6b-base:
+    name: "Qwen/Qwen3-TTS-12Hz-0.6B-Base"
+    description: "Qwen3-TTS 12Hz 0.6B Base model (Voice Cloning)"
+    framework: "qwen3-tts"
+    max_tokens: 4096
+    supports_ssml: true
+    supports_voice_cloning: true
+    requires_reference_audio: true
+    default_sample_rate: 24000
+    model_path: "D:\\llm-models"
+    parameters:
+      temperature:
+        type: float
+        default: 0.7
+        min: 0.0
+        max: 2.0
+        description: "Sampling temperature"
+      top_p:
+        type: float
+        default: 0.9
+        min: 0.0
+        max: 1.0
+        description: "Nucleus sampling parameter"
+      speed:
+        type: float
+        default: 1.0
+        min: 0.5
+        max: 2.0
+        description: "Speech speed"
+      emotion:
+        type: str
+        default: "neutral"
+        choices: ["neutral", "happy", "sad", "angry", "tender"]
+        description: "Emotion type"
+      voice_clone_audio:
+        type: str
+        default: null
+        description: "Path to reference audio file for voice cloning"
+      output_format:
+        type: str
+        default: "wav"
+        choices: ["wav", "mp3", "flac"]
+        description: "Output audio format"
+      output_sample_rate:
+        type: int
+        default: 24000
+        choices: [16000, 22050, 24000, 44100, 48000]
+        description: "Output sample rate"
+
+  indextts2:
+    name: "IndexTTS2"
+    description: "IndexTTS2 - High-quality TTS with voice cloning support"
+    framework: "indextts2"
+    max_tokens: 4096
+    supports_ssml: false
+    supports_voice_cloning: true
+    requires_reference_audio: false
+    default_sample_rate: 24000
+    parameters:
+      emotion:
+        type: str
+        default: "neutral"
+        choices: ["neutral", "happy", "sad", "angry"]
+        description: "Emotion type for speech synthesis"
+      speed:
+        type: float
+        default: 1.0
+        min: 0.5
+        max: 2.0
+        description: "Speech speed multiplier"
+      voice_clone_audio:
+        type: str
+        default: null
+        description: "Path to reference audio file for voice cloning (optional)"
+      language:
+        type: str
+        default: "zh"
+        choices: ["en", "zh"]
+        description: "Language for synthesis (en=English, zh=Chinese)"
+      output_format:
+        type: str
+        default: "wav"
+        choices: ["wav", "mp3", "flac"]
+        description: "Output audio format"
+
+  voxcpm2:
+    name: "OpenBMB/VoxCPM2"
+    description: "VoxCPM2 - Tokenizer-Free TTS with voice design and cloning, supports 30+ languages and 9 dialects"
+    framework: "voxcpm2"
+    max_tokens: 4096
+    supports_ssml: false
+    supports_voice_cloning: true
+    requires_reference_audio: false
+    default_sample_rate: 48000
+    model_path: "D:\\llm-models"
+    parameters:
+      voice_clone_audio:
+        type: str
+        default: null
+        description: "Path to reference audio file for voice cloning (optional)"
+      output_format:
+        type: str
+        default: "wav"
+        choices: ["wav", "mp3", "flac"]
+        description: "Output audio format"
+      output_sample_rate:
+        type: int
+        default: 48000
+        choices: [16000, 22050, 24000, 44100, 48000]
+        description: "Output sample rate"
+  
+  qwen3-tts-12hz-0.6b-customvoice:
+    name: "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice"
+    description: "Qwen3-TTS 12Hz 0.6B CustomVoice model (Preset Speakers)"
+    framework: "qwen3-tts"
+    max_tokens: 4096
+    supports_ssml: true
+    supports_voice_cloning: false
+    requires_reference_audio: false
+    default_sample_rate: 24000
+    model_path: "D:\\llm-models"
+    parameters:
+      temperature:
+        type: float
+        default: 0.7
+        min: 0.0
+        max: 2.0
+        description: "Sampling temperature"
+      top_p:
+        type: float
+        default: 0.9
+        min: 0.0
+        max: 1.0
+        description: "Nucleus sampling parameter"
+      speed:
+        type: float
+        default: 1.0
+        min: 0.5
+        max: 2.0
+        description: "Speech speed"
+      emotion:
+        type: str
+        default: "neutral"
+        choices: ["neutral", "happy", "sad", "angry", "tender"]
+        description: "Emotion type"
+      speaker:
+        type: str
+        default: "aiden"
+        choices: ["aiden", "dylan", "eric", "ono_anna", "ryan", "serena", "sohee", "uncle_fu", "vivian"]
+        description: "Preset speaker voice"
+      output_format:
+        type: str
+        default: "wav"
+        choices: ["wav", "mp3", "flac"]
+        description: "Output audio format"
+      output_sample_rate:
+        type: int
+        default: 24000
+        choices: [16000, 22050, 24000, 44100, 48000]
+        description: "Output sample rate"

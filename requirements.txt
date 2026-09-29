@@ -1,0 +1,32 @@
+# =============================================================================
+# VoiceCloner - Python Dependencies
+# =============================================================================
+# Install: pip install -r requirements.txt
+# =============================================================================
+
+# --- Core Dependencies (always required) ---
+pyyaml>=6.0              # YAML config parsing (tts-profiles.yaml)
+loguru>=0.7.0            # Enhanced logging with emoji support
+numpy>=1.24.0            # Numerical array operations
+torch>=2.0.0             # PyTorch for CUDA detection and model inference
+soundfile>=0.12.0        # Audio file I/O (wav, mp3, flac)
+scipy>=1.10.0            # Alternative audio file writing (fallback)
+requests>=2.28.0         # HTTP download for CC-CEDICT dictionary
+
+# --- Phonetic Preprocessing (--phonetic flag) ---
+epitran>=1.24            # Epitran G2P (Chinese text → pinyin)
+panphon>=0.20            # Phonological feature tables (epitran dependency)
+
+# --- Model-Specific Dependencies (install as needed) ---
+# Qwen3-TTS model:
+#   pip install qwen-tts modelscope
+# qwen-tts>=0.1.0        # Qwen3-TTS model SDK
+# modelscope>=1.14.0      # ModelScope model download hub
+
+# IndexTTS2 model:
+#   pip install indextts
+# indextts>=0.1.0         # IndexTTS2 model SDK
+
+# VoxCPM2 model:
+#   pip install voxcpm
+# voxcpm>=0.1.0           # VoxCPM2 model SDK

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceCloner 控制台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=__APP_VERSION__">
+</head>
+<body>
+  <div class="aurora"></div>
+  <div class="page-shell">
+    <header class="masthead">
+      <div>
+        <p class="kicker">VoiceCloner Control Deck</p>
+        <h1 id="appTitle">VoiceCloner</h1>
+      </div>
+      <div class="masthead-status">
+        <span id="connectionBadge" class="badge badge-live">连接正常</span>
+        <span id="healthBadge" class="badge">检查中</span>
+        <button id="openEventLogButton" class="ghost-button event-trigger-button" type="button" data-tooltip="查看错误与告警事件列表">
+          <span class="button-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+              <path d="M8 2.75a3 3 0 0 0-3 3v1.1c0 .72-.24 1.42-.68 1.99L3 10.5h10l-1.32-1.66A3.2 3.2 0 0 1 11 6.85v-1.1a3 3 0 0 0-3-3Z"></path>
+              <path d="M6.5 12.25a1.5 1.5 0 0 0 3 0"></path>
+            </svg>
+          </span>
+          <span class="button-label">事件</span>
+          <span id="eventCountBadge" class="event-count-badge hidden">0</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="tab-bar" aria-label="主导航">
+      <button class="tab-button is-active" type="button" data-tab="tasks" data-tooltip="查看当前任务队列">任务列表</button>
+      <button class="tab-button" type="button" data-tab="profiles" data-tooltip="管理参考语音与语音配置">语音配置</button>
+    </nav>
+
+    <main>
+      <section id="tasksTab" class="workspace is-active">
+        <section class="panel deck-panel">
+          <div class="board-toolbar">
+            <div>
+              <p class="section-kicker">Voice Studio</p>
+              <h2>把文档变成可播放的声音</h2>
+              <div class="copy-tip-row">
+                <span class="context-tip" data-tooltip="上传文本或书稿，选择模型与音色，系统会持续生成可试听、可下载的 TTS 音频内容。">功能说明</span>
+              </div>
+            </div>
+            <div class="toolbar-actions">
+                <button id="refreshTasks" class="ghost-button toolbar-action-button" type="button" data-tooltip="立即刷新任务与状态">
+                  <span class="button-icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" focusable="false">
+                      <path d="M13 3.75V7h-3.25"></path>
+                      <path d="M3.5 12A5 5 0 0 0 12.4 13"></path>
+                      <path d="M3 12.25V9h3.25"></path>
+                      <path d="M12.5 4A5 5 0 0 0 3.6 3"></path>
+                    </svg>
+                  </span>
+                  <span class="button-label">刷新</span>
+                </button>
+                <button id="openTaskModalButton" class="mini-accent-button toolbar-action-button" type="button" data-tooltip="创建新的图书转语音任务">
+                  <span class="button-icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" focusable="false">
+                      <path d="M8 3v10"></path>
+                      <path d="M3 8h10"></path>
+                    </svg>
+                  </span>
+                  <span class="button-label">新建任务</span>
+                </button>
+            </div>
+          </div>
+
+          <div id="taskSummaryBar" class="summary-strip"></div>
+
+          <div class="task-table-shell">
+            <table class="task-table">
+              <thead>
+                <tr>
+                  <th>任务</th>
+                  <th>模型</th>
+                  <th>状态</th>
+                  <th>进度</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="taskTableBody"></tbody>
+            </table>
+            <div id="taskListEmpty" class="empty-state hidden">还没有任务，点击右上角“新建任务”开始。</div>
+          </div>
+        </section>
+      </section>
+
+      <section id="profilesTab" class="workspace">
+        <div class="profile-workspace">
+          <aside class="panel profile-list-panel">
+            <div class="section-header section-header-spread">
+              <div>
+                <h2>语音配置</h2>
+              </div>
+              <button id="newProfileButton" class="icon-accent-button" type="button" aria-label="添加语音" data-tooltip="打开添加语音窗口">
+                <span class="button-icon" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" focusable="false">
+                    <path d="M8 3v10"></path>
+                    <path d="M3 8h10"></path>
+                  </svg>
+                </span>
+              </button>
+            </div>
+            <div id="profileList" class="profile-list"></div>
+          </aside>
+
+          <section class="panel profile-detail-panel">
+            <div class="section-header">
+              <div>
+                <p class="section-kicker">Profile Detail</p>
+                <h2 id="profileEditorTitle">选择一个语音配置</h2>
+              </div>
+            </div>
+
+            <form id="profileEditorForm" class="stack-form profile-editor-form">
+              <label>
+                <span>配置名称</span>
+                <input id="profileName" name="name" type="text" readonly>
+              </label>
+
+              <div class="two-col-grid">
+                <label>
+                  <span>语言</span>
+                  <select id="profileLanguage" name="language">
+                    <option value="auto">自动检测</option>
+                    <option value="zh-cn">中文</option>
+                    <option value="en">英文</option>
+                  </select>
+                </label>
+                <label>
+                  <span>资源哈希</span>
+                  <input id="profileHash" type="text" readonly>
+                </label>
+              </div>
+
+              <label>
+                <span>说明</span>
+                <textarea id="profileDescription" name="description" rows="4" placeholder="音色说明、使用场景或角色风格"></textarea>
+              </label>
+
+              <div class="preview-card">
+                <div>
+                  <p class="meta-label">试听</p>
+                  <p id="profileAudioStatus" class="muted">选择一个语音配置后，可直接播放参考音频检查音效。</p>
+                </div>
+                <audio id="profilePreview" controls preload="none"></audio>
+              </div>
+
+              <div class="form-actions-row spread-row">
+                <div class="button-cluster">
+                  <button id="saveProfileButton" class="primary-button" type="submit" data-tooltip="保存当前语音配置的元数据">保存</button>
+                  <button id="playProfileButton" class="ghost-button" type="button" data-tooltip="播放当前语音配置的参考音频">播放</button>
+                  <button id="deleteProfileButton" class="danger-button" type="button" data-tooltip="删除当前语音配置，删除前会二次确认">删除</button>
+                </div>
+                <p id="profileMessage" class="form-message"></p>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <aside id="taskDrawer" class="task-drawer" aria-hidden="true">
+    <div class="drawer-overlay" data-close-drawer="true"></div>
+    <div id="drawerResizeHandle" class="drawer-resize-handle" role="separator" aria-orientation="vertical"></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-title-block">
+          <p class="drawer-title-kicker">Narration Record</p>
+          <h2 class="drawer-heading-text">Task Detail</h2>
+          <p id="drawerTaskTitle" class="drawer-document-name">任务详情和进度</p>
+        </div>
+        <button id="closeDrawerButton" class="icon-button" type="button" aria-label="关闭详情" data-tooltip="关闭任务详情抽屉">
+          <span class="button-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+              <path d="M4 4l8 8"></path>
+              <path d="M12 4l-8 8"></path>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <div class="detail-tab-bar" role="tablist" aria-label="Task Detail 导航">
+          <button id="drawerStatusTab" class="detail-tab-button is-active" type="button" data-drawer-tab="status" role="tab" aria-selected="true">任务状态</button>
+          <button id="drawerFilesTab" class="detail-tab-button" type="button" data-drawer-tab="files" role="tab" aria-selected="false">转换文件列表</button>
+        </div>
+
+        <section id="drawerStatusPanel" class="drawer-section drawer-tab-panel">
+          <div class="summary-grid" id="drawerSummary"></div>
+          <div id="drawerTaskParameters" class="task-detail-groups"></div>
+        </section>
+
+        <section id="drawerFilesPanel" class="drawer-section drawer-section-flex drawer-tab-panel hidden">
+          <div id="taskTimelineList" class="segment-scroll task-timeline-list"></div>
+        </section>
+      </div>
+    </div>
+  </aside>
+
+  <div id="taskModal" class="modal-shell" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="taskModal"></div>
+    <div class="modal-card task-modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Create Task</p>
+          <h2>新建任务</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-modal="taskModal" aria-label="关闭新建任务窗口" data-tooltip="关闭新建任务窗口">
+          <span class="button-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+              <path d="M4 4l8 8"></path>
+              <path d="M12 4l-8 8"></path>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <form id="taskForm" class="stack-form">
+        <label>
+          <span>书籍文件</span>
+          <input id="sourceFile" name="source_file" type="file" accept=".txt,.md,.markdown,.epub,.pdf,.docx,.html,.htm,.xhtml" required>
+        </label>
+
+        <div class="two-col-grid">
+          <label>
+            <span>模型</span>
+            <select id="modelName" name="model_name"></select>
+          </label>
+          <label>
+            <span>语言</span>
+            <select id="language" name="language"></select>
+          </label>
+        </div>
+
+        <section id="taskReferenceSection" class="task-form-section hidden">
+          <div class="two-col-grid">
+            <label>
+              <span>参考音频</span>
+              <input id="voiceFile" name="voice_file" type="file" accept=".wav,.mp3,.m4a,.ogg,.flac">
+            </label>
+            <label>
+              <span>语音配置</span>
+              <select id="voiceProfile" name="voice_profile">
+                <option value="">直接使用上传音频</option>
+              </select>
+            </label>
+          </div>
+          <p id="taskReferenceHint" class="muted field-note"></p>
+        </section>
+
+        <section id="taskModelInputs" class="task-form-section task-model-inputs"></section>
+
+        <section id="modelProfileHint" class="model-profile-card"></section>
+
+        <div class="form-actions-row spread-row">
+          <div class="button-cluster">
+            <button class="ghost-button" type="button" data-close-modal="taskModal" data-tooltip="放弃本次任务创建">取消</button>
+            <button class="primary-button" type="submit" data-tooltip="提交新任务到任务队列">提交任务</button>
+          </div>
+          <p id="formMessage" class="form-message"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="voiceModal" class="modal-shell" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="voiceModal"></div>
+    <div class="modal-card voice-modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Add Voice</p>
+          <h2>添加语音</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-modal="voiceModal" aria-label="关闭添加语音窗口" data-tooltip="关闭添加语音窗口">
+          <span class="button-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+              <path d="M4 4l8 8"></path>
+              <path d="M12 4l-8 8"></path>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <form id="voiceModalForm" class="stack-form">
+        <div class="two-col-grid">
+          <label>
+            <span>配置名称</span>
+            <input id="voiceModalName" name="name" type="text" placeholder="例如 narrator-cool" required>
+          </label>
+          <label>
+            <span>语言</span>
+            <select id="voiceModalLanguage" name="language">
+              <option value="auto">自动检测</option>
+              <option value="zh-cn">中文</option>
+              <option value="en">英文</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>说明</span>
+          <textarea id="voiceModalDescription" name="description" rows="3" placeholder="填写音色说明或用途"></textarea>
+        </label>
+
+        <label>
+          <span>语音文件</span>
+          <input id="voiceAssetFileInput" type="file" accept=".wav,.mp3,.m4a,.ogg,.flac" required>
+        </label>
+
+        <div class="asset-status-card">
+          <div>
+            <p class="meta-label">资源状态</p>
+            <p id="voiceHashStatus" class="muted">选择语音文件后，前端会计算 hash，并先向后端检查是否已存在。</p>
+          </div>
+          <div class="hash-box">
+            <span>SHA-256</span>
+            <strong id="voiceHashValue">-</strong>
+          </div>
+        </div>
+
+        <div class="preview-card">
+          <div>
+            <p class="meta-label">试听</p>
+            <p id="voiceAssetStatus" class="muted">命中已有资源或上传完成后，可以先试听再点击添加。</p>
+          </div>
+          <audio id="voiceModalPreview" controls preload="none"></audio>
+        </div>
+
+        <div class="form-actions-row spread-row">
+          <div class="button-cluster">
+            <button id="voicePreviewButton" class="ghost-button" type="button" data-tooltip="播放当前待添加的语音文件">试听</button>
+            <button class="primary-button" type="submit" data-tooltip="基于当前资源创建新的语音配置">添加</button>
+          </div>
+          <p id="voiceModalMessage" class="form-message"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal-shell" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card confirm-card">
+      <div class="modal-header compact-header">
+        <div>
+          <p class="section-kicker">Confirm</p>
+          <h2 id="confirmTitle">请确认</h2>
+        </div>
+      </div>
+      <p id="confirmMessage" class="confirm-copy"></p>
+      <div class="form-actions-row spread-row">
+        <div class="button-cluster">
+          <button id="confirmCancelButton" class="ghost-button" type="button" data-tooltip="取消当前操作">取消</button>
+          <button id="confirmOkButton" class="danger-button" type="button" data-tooltip="确认当前操作">确认</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="eventAlertModal" class="modal-shell" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div id="eventAlertCard" class="modal-card alert-card" data-level="error">
+      <div class="modal-header compact-header">
+        <div>
+          <p id="eventAlertKicker" class="section-kicker">Error</p>
+          <h2 id="eventAlertTitle">发生错误</h2>
+        </div>
+        <span id="eventAlertLevelBadge" class="event-level-badge event-level-badge--error">错误</span>
+      </div>
+      <p id="eventAlertSource" class="alert-source"></p>
+      <p id="eventAlertMessage" class="confirm-copy"></p>
+      <div class="form-actions-row spread-row">
+        <div class="button-cluster wrap-cluster">
+          <button id="eventAlertViewListButton" class="ghost-button" type="button" data-tooltip="打开完整事件列表">查看事件列表</button>
+          <button id="eventAlertCloseButton" class="primary-button" type="button" data-tooltip="关闭当前提示窗口">知道了</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="eventLogModal" class="modal-shell" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="eventLogModal"></div>
+    <div class="modal-card event-log-card">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Event Ledger</p>
+          <h2>事件中心</h2>
+          <p id="eventLogMeta" class="confirm-copy">当前没有错误或告警事件。</p>
+        </div>
+        <div class="button-cluster wrap-cluster">
+          <button id="clearEventsButton" class="danger-button" type="button" data-tooltip="清空当前缓存的全部事件">清空全部</button>
+          <button class="icon-button" type="button" data-close-modal="eventLogModal" aria-label="关闭事件列表" data-tooltip="关闭事件列表">
+            <span class="button-icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" focusable="false">
+                <path d="M4 4l8 8"></path>
+                <path d="M12 4l-8 8"></path>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div id="eventList" class="event-list"></div>
+    </div>
+  </div>
+
+  <div id="tooltipBubble" class="tooltip-bubble" role="tooltip" aria-hidden="true"></div>
+
+  <script src="/static/app.js?v=__APP_VERSION__"></script>
+</body>
+</html>
