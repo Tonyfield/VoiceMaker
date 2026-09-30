@@ -9,6 +9,7 @@ import { withRetry } from "./retry";
 import { errorService } from "./errorService";
 import { segmentLogService } from "./segmentLogService";
 import { namedEntityService } from "./namedEntityService";
+import { resetTextRulesTrace } from "./textRules";
 import { getErrorMessage } from "../shared/errors";
 import { buildIntermediateBody, buildSegments, sortSegmentKeys, type SegmentEntry } from "./segmentBuilder";
 import { synthesizeText, buildPayload, audioToDataUrl, type TtsModelRef } from "./ttsClient";
@@ -317,6 +318,7 @@ export async function prepareTask(taskId: number): Promise<void> {
 
   taskService.setStatus(taskId, "segmenting", { progress: 0, error: null, segment_count: 0 });
   logger.info(`🚧 开始准备任务 ${taskId} (${task.name})`);
+  resetTextRulesTrace();
 
   const params = safeJson(task.params_json);
   const phoneticEnabled = Boolean(params.phonetic);

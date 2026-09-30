@@ -58,7 +58,6 @@ const ru: Messages = {
   "task.voicePlaceholder": "Выберите образец голоса (пусто — голос по умолчанию)", "task.addVoice": "+ Добавить образец голоса",
   "task.autoPhonetic": "Автофонетика", "task.phoneticFormat": "Формат фонетики",
   "task.insertInterjection": "Перед междометиями", "task.insertBetween": "Между каждым токеном",
-  "task.insertComma": "После ! или ? вставить запятую",
   "task.namedEntities": "Имена собственные", "task.manageEntities": "Управление именами собственными",
   "task.namedEntityCount": "Всего {count}; отмеченные записи заменяются текстом замены при фонетике",
   "task.namedEntityHint": "Используется для замены имён собственных при фонетике",

@@ -58,7 +58,6 @@ const hi: Messages = {
   "task.voicePlaceholder": "आवाज़ नमूना चुनें (खाली = डिफ़ॉल्ट आवाज़)", "task.addVoice": "+ आवाज़ नमूना जोड़ें",
   "task.autoPhonetic": "स्वतः ध्वन्यात्मक", "task.phoneticFormat": "ध्वन्यात्मक प्रारूप",
   "task.insertInterjection": "विस्मयादिबोधक से पहले", "task.insertBetween": "प्रत्येक टोकन के बीच",
-  "task.insertComma": "! या ? के बाद अल्पविराम जोड़ें",
   "task.namedEntities": "नामित इकाइयाँ", "task.manageEntities": "नामित इकाइयाँ प्रबंधित करें",
   "task.namedEntityCount": "कुल {count}; चयनित प्रविष्टियाँ ध्वन्यात्मक के दौरान प्रतिस्थापन पाठ से बदली जाएँगी",
   "task.namedEntityHint": "ध्वन्यात्मक के दौरान नाम प्रतिस्थापन हेतु",

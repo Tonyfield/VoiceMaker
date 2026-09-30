@@ -58,7 +58,6 @@ const es: Messages = {
   "task.voicePlaceholder": "Selecciona una muestra de voz (vacío = voz predeterminada)", "task.addVoice": "+ Añadir muestra de voz",
   "task.autoPhonetic": "Fonética automática", "task.phoneticFormat": "Formato fonético",
   "task.insertInterjection": "Antes de las interjecciones", "task.insertBetween": "Entre cada token",
-  "task.insertComma": "Tras ! o ? insertar una coma",
   "task.namedEntities": "Nombres propios", "task.manageEntities": "Gestionar nombres propios",
   "task.namedEntityCount": "{count} en total; las entradas marcadas se reescriben con el texto de reemplazo durante la fonética",
   "task.namedEntityHint": "Se usa para reemplazar nombres propios durante la fonética",

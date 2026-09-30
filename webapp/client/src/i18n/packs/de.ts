@@ -58,7 +58,6 @@ const de: Messages = {
   "task.voicePlaceholder": "Stimmprobe wählen (leer = Standardstimme)", "task.addVoice": "+ Stimmprobe hinzufügen",
   "task.autoPhonetic": "Auto-Phonetik", "task.phoneticFormat": "Phonetikformat",
   "task.insertInterjection": "Vor Interjektionen", "task.insertBetween": "Zwischen jedem Token",
-  "task.insertComma": "Nach ! oder ? ein Komma einfügen",
   "task.namedEntities": "Eigennamen", "task.manageEntities": "Eigennamen verwalten",
   "task.namedEntityCount": "{count} insgesamt; markierte Einträge werden bei der Phonetik durch den Ersatztext ersetzt",
   "task.namedEntityHint": "Wird bei der Phonetik zum Ersetzen von Eigennamen verwendet",

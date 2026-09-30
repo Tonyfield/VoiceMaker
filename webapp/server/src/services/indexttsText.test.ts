@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { enhanceIndexttsText, enhanceOptionsFromParams } from "./indexttsText";
+import type { RegexInsertRule } from "./textRules";
 
 test("感叹词前插入中杠（串首/标点边界）", () => {
   assert.equal(enhanceIndexttsText("啊，原来是你"), "-啊，原来是你");
@@ -61,44 +62,91 @@ test("enhanceOptionsFromParams 读取复选框与字符", () => {
   assert.deepEqual(enhanceOptionsFromParams({}), {
     interjectionPrefix: "-",
     wordGap: undefined,
-    commaAfterPunct: false,
+    textRules: [],
   });
   assert.deepEqual(enhanceOptionsFromParams({ interjection_prefix_enabled: false }), {
     interjectionPrefix: undefined,
     wordGap: undefined,
-    commaAfterPunct: false,
+    textRules: [],
   });
   assert.deepEqual(
     enhanceOptionsFromParams({
       word_gap_enabled: true,
       word_gap: "/",
-      punct_comma_enabled: true,
+      text_rules: [{ pattern: "[。]", position: "after", insert: "，\n" }],
     }),
-    { interjectionPrefix: "-", wordGap: "/", commaAfterPunct: true }
+    {
+      interjectionPrefix: "-",
+      wordGap: "/",
+      textRules: [{ pattern: "[。]", position: "after", insert: "，\n" }],
+    }
   );
 });
 
-test("感叹号/问号后补逗号（全角补「，」、半角补「,」）", () => {
+test("正则插入规则：匹配后插入（after）", () => {
+  const rules: RegexInsertRule[] = [{ pattern: "[。]", position: "after", insert: "，" }];
   assert.equal(
-    enhanceIndexttsText("你好！你是谁？", { commaAfterPunct: true }),
-    "你好！，你是谁？，"
-  );
-  assert.equal(
-    enhanceIndexttsText("Hi! Are you ok?", { commaAfterPunct: true }),
-    "Hi!, Are you ok?,"
+    enhanceIndexttsText("今天天气很好。我们出发吧。", { textRules: rules }),
+    "今天天气很好。，我们出发吧。，"
   );
 });
 
-test("补逗号：后面已是逗号或同类标点则不重复插入，且幂等", () => {
+test("正则插入规则：匹配前插入（before）", () => {
+  const rules: RegexInsertRule[] = [{ pattern: "[。]", position: "before", insert: "\n" }];
   assert.equal(
-    enhanceIndexttsText("你好！，真好", { commaAfterPunct: true }),
-    "你好！，真好"
+    enhanceIndexttsText("今天天气很好。我们出发吧。", { textRules: rules }),
+    "今天天气很好\n。我们出发吧\n。"
   );
+});
+
+test("正则插入规则：insert 支持 \\n 转义写法（等价于真实换行）", () => {
+  const rules: RegexInsertRule[] = [{ pattern: "[。]", position: "after", insert: "\\n" }];
   assert.equal(
-    enhanceIndexttsText("什么？！", { commaAfterPunct: true }),
-    "什么？！，"
+    enhanceIndexttsText("你好。再见。", { textRules: rules }),
+    "你好。\n再见。\n"
   );
-  const once = enhanceIndexttsText("真的吗？", { commaAfterPunct: true });
-  assert.equal(once, "真的吗？，");
-  assert.equal(enhanceIndexttsText(once, { commaAfterPunct: true }), once);
+  assert.equal(enhanceIndexttsText("你好。\n再见。\n", { textRules: rules }), "你好。\n再见。\n");
+});
+
+test("正则插入规则：支持回车换行，且幂等", () => {
+  const rules: RegexInsertRule[] = [{ pattern: "[。！？]", position: "after", insert: "\n" }];
+  const out = enhanceIndexttsText("你好。你好吗？", { textRules: rules });
+  assert.equal(out, "你好。\n你好吗？\n");
+  assert.equal(enhanceIndexttsText(out, { textRules: rules }), out);
+});
+
+test("正则插入规则：多条按顺序实施", () => {
+  const rules: RegexInsertRule[] = [
+    { pattern: "[。]", position: "after", insert: "，" },
+    { pattern: "，", position: "before", insert: "\n" },
+  ];
+  const out = enhanceIndexttsText("我们走。他留下。", { textRules: rules });
+  assert.equal(out, "我们走。\n，他留下。\n，");
+  // 幂等：重复执行结果一致
+  assert.equal(enhanceIndexttsText(out, { textRules: rules }), out);
+});
+
+test("正则插入规则：无效正则跳过、空插入跳过", () => {
+  const rules: RegexInsertRule[] = [
+    { pattern: "[", position: "after", insert: "，" }, // 无效正则
+    { pattern: "[。]", position: "after", insert: "" }, // 空插入
+    { pattern: "[！]", position: "before", insert: "\n" },
+  ];
+  assert.equal(enhanceIndexttsText("你好！", { textRules: rules }), "你好\n！");
+});
+
+test("enhanceOptionsFromParams 过滤非法规则项", () => {
+  assert.deepEqual(
+    enhanceOptionsFromParams({
+      text_rules: [
+        { pattern: "[。]", position: "after", insert: "，" },
+        { pattern: "", position: "after", insert: "，" }, // 空 pattern
+        { pattern: "[。]", position: "middle", insert: "，" }, // 非法 position
+        { pattern: "[。]", position: "after", insert: 123 }, // 非字符串 insert
+        null,
+        "oops",
+      ],
+    }).textRules,
+    [{ pattern: "[。]", position: "after", insert: "，" }]
+  );
 });

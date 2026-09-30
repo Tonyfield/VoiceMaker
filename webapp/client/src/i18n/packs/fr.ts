@@ -60,7 +60,6 @@ const fr: Messages = {
   "task.voicePlaceholder": "Sélectionnez un échantillon de voix (vide = voix par défaut)", "task.addVoice": "+ Ajouter un échantillon",
   "task.autoPhonetic": "Phonétique auto", "task.phoneticFormat": "Format phonétique",
   "task.insertInterjection": "Avant les interjections", "task.insertBetween": "Entre chaque token",
-  "task.insertComma": "Après ! ou ? insérer une virgule",
   "task.namedEntities": "Noms propres", "task.manageEntities": "Gérer les noms propres",
   "task.namedEntityCount": "{count} au total ; les entrées cochées sont réécrites avec le texte de remplacement lors de la phonétique",
   "task.namedEntityHint": "Utilisé pour le remplacement des noms propres lors de la phonétique",

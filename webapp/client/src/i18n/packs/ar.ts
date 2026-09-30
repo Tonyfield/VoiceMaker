@@ -58,7 +58,6 @@ const ar: Messages = {
   "task.voicePlaceholder": "اختر عيّنة صوت (فارغ = الصوت الافتراضي)", "task.addVoice": "+ إضافة عيّنة صوت",
   "task.autoPhonetic": "نطق تلقائي", "task.phoneticFormat": "تنسيق النطق",
   "task.insertInterjection": "قبل حروف النداء", "task.insertBetween": "بين كل مقطع",
-  "task.insertComma": "بعد ! أو ? إدراج فاصلة",
   "task.namedEntities": "الأسماء المحددة", "task.manageEntities": "إدارة الأسماء المحددة",
   "task.namedEntityCount": "الإجمالي {count}؛ تُستبدل الإدخالات المحددة بنص الاستبدال أثناء النطق",
   "task.namedEntityHint": "يُستخدم لاستبدال الأسماء المحددة أثناء النطق",

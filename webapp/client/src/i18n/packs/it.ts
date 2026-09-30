@@ -56,7 +56,6 @@ const it: Messages = {
   "task.voicePlaceholder": "Seleziona un campione vocale (vuoto = voce predefinita)", "task.addVoice": "+ Aggiungi campione vocale",
   "task.autoPhonetic": "Fonetica automatica", "task.phoneticFormat": "Formato fonetico",
   "task.insertInterjection": "Prima delle interiezioni", "task.insertBetween": "Tra ogni token",
-  "task.insertComma": "Dopo ! o ? inserisci una virgola",
   "task.namedEntities": "Nomi propri", "task.manageEntities": "Gestisci nomi propri",
   "task.namedEntityCount": "{count} in totale; le voci selezionate sono riscritte con il testo di sostituzione durante la fonetica",
   "task.namedEntityHint": "Usato per la sostituzione dei nomi propri durante la fonetica",

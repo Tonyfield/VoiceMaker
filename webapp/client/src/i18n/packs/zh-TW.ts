@@ -53,7 +53,6 @@ const zhTW: Messages = {
   "task.selectDoc": "選擇文件", "task.noDocSelected": "未選擇文件", "task.voicePlaceholder": "選擇聲音樣本（留空使用預設音色）",
   "task.addVoice": "＋ 新增聲音樣本", "task.autoPhonetic": "自動注音", "task.phoneticFormat": "注音格式",
   "task.insertInterjection": "在感嘆詞前插入", "task.insertBetween": "在每個分詞之間插入",
-  "task.insertComma": "在驚嘆號(!，！)、問號(?？)後插入逗號(，,)",
   "task.namedEntities": "專有名詞", "task.manageEntities": "管理專有名詞",
   "task.namedEntityCount": "共 {count} 筆，勾選的項目會在注音時按「替換文字」改寫",
   "task.namedEntityHint": "用於注音時的專有名詞替換",

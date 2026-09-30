@@ -241,6 +241,21 @@
   min-height: var(--st-control-h);
 }
 
+/* 正则替换规则列表：纵向堆叠，每行一条规则 */
+.st-rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.st-rule-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
 .st-control .ant-input,
 .st-control .ant-input-number,
 .st-control .ant-select,

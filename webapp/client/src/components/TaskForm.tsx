@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Button, Checkbox, Form, Input, Modal, Select, Space, Switch, Tooltip, Typography, Upload, message,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { ModelSpec, Task, Voice, ParamField } from "../api/client";
 import DynamicParamForm from "./DynamicParamForm";
 import { PARAM_GROUPS, PARAM_HELP_KEYS, PARAM_OPTION_KEYS, PARAM_OPTION_VALUES, PARAM_TITLE_KEYS } from "./paramGroups";
@@ -46,7 +46,7 @@ const TEXT_ENHANCE_DEFAULTS = {
   interjection_prefix: "-",
   word_gap_enabled: false,
   word_gap: "-",
-  punct_comma_enabled: false,
+  text_rules: [],
 };
 
 /** 分段长度是任务级参数，并入「文档」页签展示（标题/说明按当前语种解析）。 */
@@ -161,6 +161,17 @@ export default function TaskForm({
   const docName = file?.name ?? task?.upload_name ?? undefined;
   const interjectionEnabled = Form.useWatch("interjection_prefix_enabled", form);
   const wordGapEnabled = Form.useWatch("word_gap_enabled", form);
+
+  /** 规则 pattern 必须是合法 JS 正则。 */
+  const validateRulePattern = (_: unknown, value: string) => {
+    if (!value) return Promise.resolve();
+    try {
+      new RegExp(value);
+      return Promise.resolve();
+    } catch {
+      return Promise.reject(new Error(t("task.rulePatternInvalid")));
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -380,11 +391,55 @@ export default function TaskForm({
     </SettingRow>
   );
 
-  const punctCommaRow = (
-    <SettingRow label="">
-      <Form.Item name="punct_comma_enabled" valuePropName="checked" noStyle>
-        <Checkbox>{t("task.insertComma")}</Checkbox>
-      </Form.Item>
+  const rulePositionOptions = [
+    { value: "after", label: t("task.ruleAfter") },
+    { value: "before", label: t("task.ruleBefore") },
+  ];
+
+  const regexRulesRow = (
+    <SettingRow label={t("task.regexRules")}>
+      <Form.List name="text_rules">
+        {(fields, { add, remove }) => (
+          <div className="st-rule-list">
+            {fields.map(({ key, name, ...restField }) => (
+              <div className="st-rule-row" key={key}>
+                <Form.Item
+                  {...restField}
+                  name={[name, "pattern"]}
+                  rules={[
+                    { required: true, message: t("task.rulePatternRequired") },
+                    { validator: validateRulePattern },
+                  ]}
+                  style={{ marginBottom: 0 }}
+                >
+                  <Input className="st-input" style={{ width: "22ch" }} placeholder={t("task.rulePattern")} />
+                </Form.Item>
+                <Form.Item {...restField} name={[name, "position"]} style={{ marginBottom: 0 }}>
+                  <Select style={{ width: 92 }} options={rulePositionOptions} />
+                </Form.Item>
+                <Form.Item {...restField} name={[name, "insert"]} style={{ marginBottom: 0 }}>
+                  <Input.TextArea
+                    autoSize={{ minRows: 1, maxRows: 3 }}
+                    style={{ width: "24ch" }}
+                    placeholder={t("task.ruleInsert")}
+                  />
+                </Form.Item>
+                <Button
+                  type="text"
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => remove(name)}
+                  title={t("act.remove")}
+                />
+              </div>
+            ))}
+            <Button type="dashed" size="small" block onClick={() => add({ position: "after" })}>
+              {t("task.ruleAdd")}
+            </Button>
+          </div>
+        )}
+      </Form.List>
     </SettingRow>
   );
 
@@ -423,8 +478,8 @@ export default function TaskForm({
           <DynamicParamForm fields={fields} voices={voices} group="phonetic" />
           {phoneticRow}
           {interjectionRow}
-          {punctCommaRow}
           {wordGapRow}
+          {regexRulesRow}
           {namedEntityRow}
         </>
       );

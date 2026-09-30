@@ -1,11 +1,12 @@
 import { cutWords } from "./jieba";
-
+import { applyRegexInsertRules, describeRule, type RegexInsertRule } from "./textRules";
+import { logger } from "../logger";
 /**
  * IndexTTS 文字增强（在把分段文本转换成 IndexTTS 输入之前执行）。
  *
- * 四项处理，可分别开启：
+ * 可分别开启：
  *  0. 专有名词替换（entities）：按「专有名词」表的替换文本改写（长词优先）；
- *  1. 句末标点补逗号（commaAfterPunct）：在感叹号/问号（`! ！ ? ？`）后补一个逗号（全角补「，」、半角补「,」）；
+ *  1. 正则插入规则（textRules）：按顺序实施正则替换——在匹配到的正则表达式前/后插入指定字符串（支持换行）；
  *  2. 分词间隔（wordGap）：用 jieba 分词后，在每个分词之间插入指定字符串；
  *  3. 感叹词前缀（interjectionPrefix）：在感叹词（啊/哦/呀…）前插入指定字符串。
  *
@@ -37,10 +38,37 @@ export interface TextEnhanceOptions {
   interjectionPrefix?: string;
   /** 在分词之间插入的字符串；空/未设置表示不处理。 */
   wordGap?: string;
-  /** 在感叹号/问号后补一个逗号（全角标点补「，」，半角标点补「,」）。 */
-  commaAfterPunct?: boolean;
+  /** 正则插入规则（按顺序实施；在匹配位置前/后插入指定字符串，支持换行）。 */
+  textRules?: RegexInsertRule[];
   /** 专有名词替换（长词优先；已替换过的不重复处理）。 */
   entities?: EntityReplacement[];
+}
+
+/** 从任务参数解析正则插入规则（仅保留 pattern/position/insert 均合法的项）。 */
+function parseTextRules(value: unknown): RegexInsertRule[] {
+  if (!Array.isArray(value)) return [];
+  const rules: RegexInsertRule[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") {
+      logger.warn(`[textRules] 忽略非法规则项: ${JSON.stringify(item)}`);
+      continue;
+    }
+    const { pattern, position, insert } = item as Record<string, unknown>;
+    if (typeof pattern !== "string" || !pattern) {
+      logger.warn(`[textRules] 忽略规则（pattern 为空）: ${JSON.stringify(item)}`);
+      continue;
+    }
+    if (position !== "before" && position !== "after") {
+      logger.warn(`[textRules] 忽略规则（position 非法）: ${JSON.stringify(item)}`);
+      continue;
+    }
+    if (typeof insert !== "string") {
+      logger.warn(`[textRules] 忽略规则（insert 非字符串）: ${JSON.stringify(item)}`);
+      continue;
+    }
+    rules.push({ pattern, position, insert });
+  }
+  return rules;
 }
 
 /** 从任务参数解析增强选项（复选框 + 字符填充框）。 */
@@ -49,12 +77,21 @@ export function enhanceOptionsFromParams(
 ): TextEnhanceOptions {
   const interjectionEnabled = params.interjection_prefix_enabled !== false;
   const wordGapEnabled = params.word_gap_enabled === true;
+  const textRules = parseTextRules(params.text_rules);
+  logger.info(
+    `[enhance] 解析增强选项: 感叹词前缀=${interjectionEnabled ? JSON.stringify(params.interjection_prefix ?? DEFAULT_INTERJECTION_PREFIX) : "关闭"}` +
+      `, 分词间隔=${wordGapEnabled ? JSON.stringify(params.word_gap ?? DEFAULT_INTERJECTION_PREFIX) : "关闭"}` +
+      `, 正则规则=${textRules.length} 条`
+  );
+  if (textRules.length) {
+    logger.info(`[enhance] 正则规则: ${textRules.map((r, i) => `#${i + 1} ${describeRule(r)}`).join("; ")}`);
+  }
   return {
     interjectionPrefix: interjectionEnabled
       ? String(params.interjection_prefix ?? DEFAULT_INTERJECTION_PREFIX)
       : undefined,
     wordGap: wordGapEnabled ? String(params.word_gap ?? DEFAULT_INTERJECTION_PREFIX) : undefined,
-    commaAfterPunct: params.punct_comma_enabled === true,
+    textRules,
   };
 }
 
@@ -62,7 +99,7 @@ export function hasEnhancement(options: TextEnhanceOptions): boolean {
   return (
     Boolean(options.interjectionPrefix) ||
     Boolean(options.wordGap) ||
-    Boolean(options.commaAfterPunct) ||
+    Boolean(options.textRules?.length) ||
     Boolean(options.entities?.length)
   );
 }
@@ -74,24 +111,6 @@ function applyEntityReplacements(text: string, rules: EntityReplacement[]): stri
     if (!rule.from || !rule.to || rule.from === rule.to) continue;
     if (out.includes(rule.to)) continue;
     out = out.split(rule.from).join(rule.to);
-  }
-  return out;
-}
-
-/** 紧跟在 !/！/?/？ 之后不再补逗号的字符（已是标点/同类句末标点）。 */
-const NO_COMMA_AFTER = new Set([",", "，", "、", "。", "；", ";", "：", ":", "!", "！", "?", "？", "…"]);
-
-/** 感叹号 / 问号后补逗号：全角标点补「，」，半角标点补「,」（幂等）。 */
-function insertCommaAfterPunct(text: string): string {
-  const chars = Array.from(text);
-  let out = "";
-  for (let i = 0; i < chars.length; i += 1) {
-    const ch = chars[i];
-    out += ch;
-    if (ch !== "!" && ch !== "！" && ch !== "?" && ch !== "？") continue;
-    const next = chars[i + 1] ?? "";
-    if (NO_COMMA_AFTER.has(next)) continue;
-    out += ch === "！" || ch === "？" ? "，" : ",";
   }
   return out;
 }
@@ -114,7 +133,7 @@ function prefixInterjections(text: string, prefix: string): string {
 }
 
 /**
- * 对单个分段文本执行增强；顺序：感叹号/问号后补逗号 → 分词间隔 → 感叹词前缀。
+ * 对单个分段文本执行增强；顺序：专有名词替换 → 正则插入规则 → 分词间隔 → 感叹词前缀。
  * 无有效选项时原样返回，保证幂等（同一文本重复执行结果一致）。
  */
 export function enhanceIndexttsText(
@@ -124,7 +143,7 @@ export function enhanceIndexttsText(
   if (!text || !hasEnhancement(options)) return text;
   let out = text;
   if (options.entities?.length) out = applyEntityReplacements(out, options.entities);
-  if (options.commaAfterPunct) out = insertCommaAfterPunct(out);
+  if (options.textRules?.length) out = applyRegexInsertRules(out, options.textRules, text.slice(0, 12));
   if (options.wordGap) {
     const gap = options.wordGap;
     // 过滤掉上一步插入的间隔符，保证重复执行结果一致（幂等）。

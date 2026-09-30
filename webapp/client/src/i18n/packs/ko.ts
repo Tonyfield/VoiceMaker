@@ -56,7 +56,6 @@ const ko: Messages = {
   "task.voicePlaceholder": "음성 샘플 선택(비워 두면 기본 음색)", "task.addVoice": "＋ 음성 샘플 추가",
   "task.autoPhonetic": "자동 주음", "task.phoneticFormat": "주음 형식",
   "task.insertInterjection": "감탄사 앞에 삽입", "task.insertBetween": "각 분절 사이에 삽입",
-  "task.insertComma": "느낌표(!，！)·물음표(?？) 뒤에 쉼표(，,) 삽입",
   "task.namedEntities": "고유명사", "task.manageEntities": "고유명사 관리",
   "task.namedEntityCount": "총 {count}개. 선택한 항목은 주음 시 '대체 텍스트'로 바뀝니다",
   "task.namedEntityHint": "주음 시 고유명사 대체에 사용",

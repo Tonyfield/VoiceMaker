@@ -59,7 +59,6 @@ const ja: Messages = {
   "task.voicePlaceholder": "音声サンプルを選択（空欄で既定音色）", "task.addVoice": "＋ 音声サンプルを追加",
   "task.autoPhonetic": "自動読み付与", "task.phoneticFormat": "読みの形式",
   "task.insertInterjection": "感動詞の前に挿入", "task.insertBetween": "各分かち書きの間に挿入",
-  "task.insertComma": "感嘆符(!，！)・疑問符(?？)の後に読点(，,)を挿入",
   "task.namedEntities": "固有名詞", "task.manageEntities": "固有名詞を管理",
   "task.namedEntityCount": "全 {count} 件。チェックした項目は読み付与時に「置換テキスト」で書き換えられます",
   "task.namedEntityHint": "読み付与時の固有名詞置換に使用",

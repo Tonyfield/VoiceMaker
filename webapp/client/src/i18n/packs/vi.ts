@@ -58,7 +58,6 @@ const vi: Messages = {
   "task.voicePlaceholder": "Chọn mẫu giọng nói (để trống dùng giọng mặc định)", "task.addVoice": "+ Thêm mẫu giọng nói",
   "task.autoPhonetic": "Phiên âm tự động", "task.phoneticFormat": "Định dạng phiên âm",
   "task.insertInterjection": "Trước thán từ", "task.insertBetween": "Giữa mỗi từ",
-  "task.insertComma": "Sau ! hoặc ? chèn dấu phẩy",
   "task.namedEntities": "Danh từ riêng", "task.manageEntities": "Quản lý danh từ riêng",
   "task.namedEntityCount": "Tổng {count}; mục được chọn sẽ được viết lại bằng văn bản thay thế khi phiên âm",
   "task.namedEntityHint": "Dùng để thay thế danh từ riêng khi phiên âm",

@@ -30,6 +30,10 @@ function ThemedApp() {
   const primaryText = textPrimaryOn(palette.surface, palette.primary);
   // 错误/危险色：按对比度调整（留余量，抵消深色算法的派生）
   const errorColor = textPrimaryOn(palette.surface, "#FF4D4F", 6.2);
+  // Tooltip 气泡：antd 默认固定黑底（colorBgSpotlight），改为跟随主题——
+  // 浅色主题用主题文字色作底 + 主题背景色作字；深色主题用主题表面色作底 + 主题文字色作字。
+  const tooltipBg = palette.dark ? palette.surface : palette.text;
+  const tooltipFg = palette.dark ? palette.text : palette.background;
 
   // 主题 CSS 变量：同时挂到 :root —— Modal / Drawer / Tooltip 等经 portal 渲染到 body，
   // 不在本组件的 div 内，挂到 :root 才能让这些弹层也跟随主题（否则会回退到浅色默认值）。
@@ -85,9 +89,9 @@ function ThemedApp() {
           colorPrimary: palette.primary,
           colorInfo: palette.primary,
           colorLink: primaryText,
-          // 实心主色（主按钮等）上的文字颜色：按对比度选黑/白
-          colorTextLightSolid: onPrimary,
-          // 主色作为文字/描边时的安全色（浅色主题下会适当加深）
+          // 注意：不要覆盖全局 colorTextLightSolid。它是「深色/实心表面上的文字」的统一 token，
+          // Tooltip(气泡)、Badge 等都依赖它；覆盖成 onPrimary 会让浅色主色主题下气泡文字变黑不可读。
+          // 实心主按钮的文字色改由 Button 组件 token primaryColor 精确控制（见下）。
           colorPrimaryText: primaryText,
           // 错误/危险按钮的红色同样按对比度调整（留更高余量，抵消深色算法的派生）
           colorError: errorColor,
@@ -103,6 +107,10 @@ function ThemedApp() {
         // 菜单选中项：统一改为「主色实底 + 对比色文字」，避免浅色主题下
         // 浅色底 + 主色字导致选中项对比度过低（马卡龙/复古/莫兰迪等）。
         components: {
+          // 实心主按钮上的文字：按主色对比度选黑/白（仅影响主按钮，不影响 Tooltip 等）。
+          Button: { primaryColor: onPrimary },
+          // 气泡跟随主题底色/字色（对比度由主题的 文字色↔背景色 保证）。
+          Tooltip: { colorBgSpotlight: tooltipBg, colorTextLightSolid: tooltipFg },
           Menu: {
             itemSelectedBg: palette.primary,
             itemSelectedColor: onPrimary,

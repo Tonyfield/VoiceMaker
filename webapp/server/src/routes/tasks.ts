@@ -5,6 +5,7 @@ import path from "node:path";
 import { taskService, uploadedFilePath, type TaskRow } from "../services/taskService";
 import { segmentText, xmlize } from "../services/phonetic";
 import { enhanceIndexttsText, enhanceOptionsFromParams } from "../services/indexttsText";
+import { resetTextRulesTrace } from "../services/textRules";
 import { namedEntityService } from "../services/namedEntityService";
 import { MAX_ITEMS as MAX_HISTORY_ITEMS, searchHistoryService } from "../services/searchHistoryService";
 import { prepareTask, requestPause, requestStop, resumeTask, runTask, segmentMaxChars, selectTtsKeys, synthesizeSegment, synthesizeTask } from "../services/taskRunner";
@@ -336,6 +337,8 @@ tasksRouter.post("/:id/phonetic", (req: Request, res: Response) => {
 
   try {
     const keys = selectTtsKeys(body, rawKeys);
+    resetTextRulesTrace();
+    logger.info(`[phonetic] 批量注音 task=${id} 分段数=${keys.length}`);
     const enhance = {
       ...enhanceOptionsFromParams(parseJsonObject(task.params_json)),
       entities: namedEntityService.replacementRules(),
@@ -642,6 +645,8 @@ tasksRouter.post("/:id/segments/:key/auto-phonetic", (req: Request, res: Respons
     return;
   }
 
+  resetTextRulesTrace();
+  logger.info(`[phonetic] 自动注音 task=${id} key=${key}`);
   const enhance = {
     ...enhanceOptionsFromParams(parseJsonObject(task.params_json)),
     entities: namedEntityService.replacementRules(),
