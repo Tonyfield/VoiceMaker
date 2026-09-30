@@ -128,3 +128,95 @@ export async function buildExport(
     contentType: "application/zip",
   };
 }
+
+/** 导出产物文件名（后台导出任务用）。 */
+export function exportFilename(name: string, scope: ExportScope, format: ExportFormat): string {
+  const safe = safeName(name, "task");
+  if (scope === "selected") {
+    return format === "zip" ? `${safe}-selected-segments.zip` : `${safe}-selected.${format}`;
+  }
+  const suffix = format === "zip" ? "chapters-segments" : `chapters-${format}`;
+  return `${safe}-${suffix}.zip`;
+}
+
+/**
+ * 后台导出：与 buildExport 同口径，但写入目标文件并汇报进度（processed/total）。
+ * 低优先级：每个分段处理后调用 yieldLoop 让出事件循环。
+ */
+export async function exportToFile(
+  taskId: number,
+  opts: { scope: ExportScope; format: ExportFormat; keys?: string[] },
+  destPath: string,
+  report: (patch: { processed?: number; total?: number; message?: string }) => void,
+  yieldLoop: () => Promise<void>
+): Promise<void> {
+  const task = taskService.get(taskId);
+  if (!task) throw new Error("任务不存在");
+  if (!taskService.readIntermediate(taskId)) throw new Error("中间文件不存在，请先分段");
+
+  if (opts.scope === "selected") {
+    const keys = opts.keys ?? [];
+    if (!keys.length) throw new Error("请先选择要导出的段落");
+    const total = keys.length;
+    report({ processed: 0, total, message: "准备导出选中分段" });
+
+    if (opts.format === "zip") {
+      const zip = new AdmZip();
+      let processed = 0;
+      for (const key of keys) {
+        const p = taskService.segmentAudioPath(taskId, key);
+        if (p) zip.addLocalFile(p);
+        processed += 1;
+        report({ processed, total, message: `已打包分段 ${key}` });
+        await yieldLoop();
+      }
+      fs.writeFileSync(destPath, zip.toBuffer());
+      return;
+    }
+
+    const { files, missing } = collectAudio(taskId, keys);
+    if (missing.length) {
+      throw new Error(`以下段落还没有语音，请先重新合成: ${missing.join(", ")}`);
+    }
+    const buffer = await mergeAudios(files, opts.format);
+    report({ processed: total, total, message: "合并选中分段" });
+    fs.writeFileSync(destPath, buffer);
+    return;
+  }
+
+  const order = taskService.sourceOrder(taskId);
+  const sources = Object.keys(order);
+  if (!sources.length) throw new Error("没有可导出的章节");
+
+  const total = sources.reduce((n, source) => n + (order[source]?.length ?? 0), 0);
+  report({ processed: 0, total, message: "准备导出章节" });
+
+  const zip = new AdmZip();
+  let processed = 0;
+  for (const source of sources) {
+    const keys = order[source];
+    const label = chapterLabel(source);
+
+    if (opts.format === "zip") {
+      for (const key of keys) {
+        const p = taskService.segmentAudioPath(taskId, key);
+        if (p) zip.addLocalFile(p, label);
+        processed += 1;
+        report({ processed, total, message: `已打包章节 ${label}` });
+        await yieldLoop();
+      }
+      continue;
+    }
+
+    const { files } = collectAudio(taskId, keys);
+    if (files.length) {
+      const buffer = await mergeAudios(files, opts.format);
+      zip.addFile(`${label}.${opts.format}`, buffer);
+    }
+    processed += keys.length;
+    report({ processed, total, message: `已合并章节 ${label}` });
+    await yieldLoop();
+  }
+
+  fs.writeFileSync(destPath, zip.toBuffer());
+}

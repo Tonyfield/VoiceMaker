@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button, Card, Empty, List, Popconfirm, Progress, Space, Tag, Tooltip, Typography, message,
 } from "antd";
-import { DeleteOutlined, EditOutlined, PauseOutlined, PlayCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PauseOutlined, PlayCircleOutlined, PlusOutlined, SettingOutlined } from "@ant-design/icons";
 import type { ModelSpec, Task, Voice } from "../api/client";
 import {
   createTask, deleteTask, getModels, getTaskStatus, getTasks, getVoices,
   pauseTask, prepareTask, resumeTask, runTask, updateTask,
 } from "../api/client";
 import TaskForm from "../components/TaskForm";
-import TaskDetail from "../components/TaskDetail";
 import { getErrorMessage } from "../lib/errors";
 import { STATUS_META, isSkipTtsBlocked, needsPrepare } from "../lib/taskStatus";
 import { usePolling } from "../hooks/usePolling";
@@ -18,12 +18,12 @@ import { useI18n } from "../i18n";
 export default function TasksPage() {
   // 注意：渲染回调里的 t 是 task，这里给 i18n 的 t 取别名
   const { t: tr } = useI18n();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [models, setModels] = useState<ModelSpec[]>([]);
   const [voices, setVoices] = useState<Voice[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
-  const [detail, setDetail] = useState<Task | null>(null);
 
   const showRequestError = useCallback((error: unknown, key?: string) => {
     const content = getErrorMessage(error, tr("error.request"));
@@ -140,9 +140,12 @@ export default function TasksPage() {
         <Typography.Title level={4} className="page-title" style={{ margin: 0 }}>
           {tr("nav.tasks")}
         </Typography.Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          {tr("act.add")}
-        </Button>
+        <Space>
+          <Button icon={<SettingOutlined />} aria-label={tr("nav.settingsPage")} onClick={() => navigate("/settings")} />
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            {tr("act.add")}
+          </Button>
+        </Space>
       </div>
 
       {tasks.length === 0 && <Empty description={tr("task.empty")} />}
@@ -173,7 +176,7 @@ export default function TasksPage() {
 
           return (
           <List.Item>
-            <Card className="flat-card" hoverable onClick={() => setDetail(t)} style={{ borderRadius: 16 }}>
+            <Card className="flat-card" hoverable onClick={() => navigate(`/tasks/${t.id}`)} style={{ borderRadius: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ flex: 1 }}>
                   <Space>
@@ -223,17 +226,6 @@ export default function TasksPage() {
         onSubmit={onSubmit}
       />
 
-      {detail && (
-        <TaskDetail
-          taskId={detail.id}
-          taskName={detail.name}
-          skipTts={detail.skip_tts}
-          onClose={() => {
-            setDetail(null);
-            void refresh();
-          }}
-        />
-      )}
     </div>
   );
 }

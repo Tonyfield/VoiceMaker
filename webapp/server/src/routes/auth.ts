@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { requireAuth } from "../auth/middleware";
 import { authService } from "../services/authService";
+import { userPreferencesService } from "../services/userPreferencesService";
 import { logger } from "../logger";
 
 export const authRouter = Router();
@@ -44,4 +45,14 @@ authRouter.post("/change-password", requireAuth, (req: Request, res: Response) =
 
 authRouter.get("/me", requireAuth, (req: Request, res: Response) => {
   res.json({ user: { id: req.auth!.uid, username: req.auth!.username } });
+});
+
+authRouter.get("/preferences", requireAuth, (req: Request, res: Response) => {
+  res.json(userPreferencesService.get(req.auth!.uid));
+});
+
+authRouter.put("/preferences", requireAuth, (req: Request, res: Response) => {
+  const next = userPreferencesService.update(req.auth!.uid, req.body || {});
+  logger.info(`⚙️ 用户 ${req.auth!.username} 更新偏好: ${JSON.stringify(next)}`);
+  res.json(next);
 });

@@ -2,7 +2,7 @@ import type { Messages } from "../locales";
 
 const ar: Messages = {
   "nav.tasks": "المهام", "nav.models": "النماذج", "nav.voices": "الأصوات", "nav.settings": "الإعدادات",
-  "nav.logout": "تسجيل الخروج", "act.add": "إضافة", "act.save": "حفظ", "act.cancel": "إلغاء",
+  "nav.logout": "تسجيل الخروج", "nav.home": "الرئيسية", "nav.settingsPage": "الإعدادات", "act.back": "رجوع", "settings.display": "العرض", "pref.fontSize": "حجم الخط", "pref.fontSizeHint": "ضبط حجم نص الواجهة", "pref.retention": "الاحتفاظ بالصوت", "pref.retentionHint": "مدة الاحتفاظ بالصوت المُنشأ وما يُحذف عند انتهائها", "pref.retentionMode": "وضع الحذف", "pref.retentionModeAll": "حذف الكل", "pref.retentionModeUnused": "حذف غير المستخدم", "pref.week": "أسبوع", "pref.month": "شهر", "nav.transfer": "نقل الملفات", "transfer.empty": "لا توجد مهام نقل", "transfer.download": "تنزيل", "transfer.logs": "السجل", "transfer.statusQueued": "في الانتظار", "transfer.statusRunning": "قيد التنفيذ", "transfer.statusDone": "مكتمل", "transfer.statusError": "فشل", "transfer.exportStarted": "بدأ التصدير؛ تابع التقدم في صفحة نقل الملفات", "transfer.cleanupStarted": "بدأ التنظيف؛ تابع التقدم في صفحة نقل الملفات", "cleanup.confirmTitle": "تأكيد حذف كل صوت المقاطع", "cleanup.confirmHint": "لا يمكن التراجع. اكتب delete للتأكيد.", "act.add": "إضافة", "act.save": "حفظ", "act.cancel": "إلغاء",
   "act.delete": "حذف", "act.reset": "إعادة تعيين", "act.run": "تشغيل", "act.pause": "إيقاف مؤقت",
   "act.resume": "متابعة", "act.apply": "تطبيق", "act.login": "تسجيل الدخول", "act.search": "بحث",
   "st.idle": "خامل", "st.segmenting": "جارٍ التقسيم", "st.ready": "جاهز", "st.running": "جارٍ التوليف",

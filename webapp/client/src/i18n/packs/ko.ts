@@ -2,7 +2,7 @@ import type { Messages } from "../locales";
 
 const ko: Messages = {
   "nav.tasks": "작업", "nav.models": "모델 설정", "nav.voices": "음성 설정", "nav.settings": "사용자 설정",
-  "nav.logout": "로그아웃", "act.add": "추가", "act.save": "저장", "act.cancel": "취소", "act.delete": "삭제",
+  "nav.logout": "로그아웃", "nav.home": "홈", "nav.settingsPage": "설정", "act.back": "뒤로", "settings.display": "표시", "pref.fontSize": "글꼴 크기", "pref.fontSizeHint": "화면 텍스트 크기 조정", "pref.retention": "오디오 보관", "pref.retentionHint": "생성된 오디오의 보관 기간과 만료 시 삭제 기준", "pref.retentionMode": "삭제 기준", "pref.retentionModeAll": "모두 삭제", "pref.retentionModeUnused": "미사용 삭제", "pref.week": "주", "pref.month": "개월", "nav.transfer": "파일 전송", "transfer.empty": "전송 작업이 없습니다", "transfer.download": "다운로드", "transfer.logs": "로그", "transfer.statusQueued": "대기 중", "transfer.statusRunning": "진행 중", "transfer.statusDone": "완료", "transfer.statusError": "실패", "transfer.exportStarted": "내보내기를 시작했습니다. '파일 전송' 페이지에서 진행 상황을 확인하세요", "transfer.cleanupStarted": "정리를 시작했습니다. '파일 전송' 페이지에서 진행 상황을 확인하세요", "cleanup.confirmTitle": "모든 분절 오디오 삭제 확인", "cleanup.confirmHint": "이 작업은 되돌릴 수 없습니다. 확인하려면 delete를 입력하세요.", "act.add": "추가", "act.save": "저장", "act.cancel": "취소", "act.delete": "삭제",
   "act.reset": "초기화", "act.run": "실행", "act.pause": "일시정지", "act.resume": "계속", "act.apply": "적용",
   "act.login": "로그인", "act.search": "검색", "st.idle": "대기", "st.segmenting": "분할 중",
   "st.ready": "합성 대기", "st.running": "합성 중", "st.paused": "일시정지", "st.done": "완료",

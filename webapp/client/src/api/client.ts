@@ -106,6 +106,24 @@ export async function changePassword(oldPassword: string, newPassword: string) {
   return data;
 }
 
+export type AudioRetentionMode = "all" | "unused";
+export interface UserPreferences {
+  /** 生成音频在后台保留的天数（7/14/21/30/90/180/270/365）。 */
+  audioRetentionDays: number;
+  /** 到期删除口径。 */
+  audioRetentionMode: AudioRetentionMode;
+}
+
+export async function getPreferences() {
+  const { data } = await api.get("/auth/preferences");
+  return data as UserPreferences;
+}
+
+export async function updatePreferences(patch: Partial<UserPreferences>) {
+  const { data } = await api.put("/auth/preferences", patch);
+  return data as UserPreferences;
+}
+
 // ---------- models ----------
 export async function getModels() {
   const { data } = await api.get("/models");
@@ -138,6 +156,12 @@ export async function deleteVoice(id: number) {
 export async function getTasks() {
   const { data } = await api.get("/tasks");
   return data as Task[];
+}
+
+/** 单个任务详情（工作区全屏页按 :id 加载）。 */
+export async function getTask(id: number) {
+  const { data } = await api.get(`/tasks/${id}`);
+  return data as Task;
 }
 export interface TaskPayload {
   name: string;
@@ -381,6 +405,69 @@ export async function exportAudio(
     }
     throw error;
   }
+}
+
+// ---------- 后台任务（导出 / 清理）----------
+
+export type JobType = "export" | "cleanup";
+export type JobStatus = "queued" | "running" | "done" | "error";
+
+export interface JobRecord {
+  id: string;
+  type: JobType;
+  taskId: number;
+  taskName: string;
+  status: JobStatus;
+  percent: number;
+  processed: number;
+  total: number;
+  message: string;
+  logs: string[];
+  resultName: string | null;
+  error: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function listJobs(taskId?: number) {
+  const { data } = await api.get("/jobs", {
+    params: taskId === undefined ? undefined : { taskId },
+  });
+  return (data as { jobs: JobRecord[] }).jobs;
+}
+
+export async function getJob(id: string) {
+  return (await api.get(`/jobs/${id}`)).data as JobRecord;
+}
+
+export async function deleteJob(id: string) {
+  await api.delete(`/jobs/${id}`);
+}
+
+/** 创建后台导出任务（进度见「文件传输」页）。 */
+export async function createExportJob(
+  id: number,
+  opts: { scope: ExportScope; format: ExportFormat; keys?: string[] }
+) {
+  return (await api.post(`/tasks/${id}/export-jobs`, opts)).data as { jobId: string };
+}
+
+/** 创建后台清理任务：unused=非最新副本；all=全部分段音频。 */
+export async function createCleanupJob(id: number, mode: "unused" | "all") {
+  return (await api.post(`/tasks/${id}/cleanup-jobs`, { mode })).data as { jobId: string };
+}
+
+/** 下载导出产物（经 axios 带鉴权，再触发浏览器保存）。 */
+export async function downloadJobResult(jobId: string, filename: string) {
+  const res = await api.get(`/jobs/${jobId}/download`, { responseType: "blob" });
+  const url = URL.createObjectURL(res.data as Blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ---------- 搜索历史（每个任务最多最近 100 条） ----------

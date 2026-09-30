@@ -3,9 +3,10 @@ import {
 } from "react";
 import VirtualList, { type ListRef } from "rc-virtual-list";
 import {
-  Badge, Button, Checkbox, Drawer, Dropdown, Empty, Input, Popover, Progress, Select, Space, Spin, Tag, theme, Tooltip, Typography, message, notification,
+  Badge, Button, Checkbox, Dropdown, Empty, Input, Modal, Popover, Progress, Select, Space, Spin, Tag, theme, Tooltip, Typography, message, notification,
 } from "antd";
-import { DownOutlined, DownloadOutlined, PauseOutlined, PlayCircleOutlined, SaveOutlined, SearchOutlined, SoundOutlined, SettingOutlined, UpOutlined, WarningOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, DeleteOutlined, DownOutlined, DownloadOutlined, PauseOutlined, PlayCircleOutlined, SaveOutlined, SearchOutlined, SoundOutlined, SettingOutlined, UpOutlined, WarningOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import {
   clearTaskErrors,
   getSegmentsPage,
@@ -14,7 +15,8 @@ import {
   getTaskInfo,
   getTaskMarks,
   getTaskStatus,
-  exportAudio,
+  createCleanupJob,
+  createExportJob,
   phoneticTask,
   prepareTask,
   pauseTask,
@@ -136,6 +138,9 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
   const [chapters, setChapters] = useState<Record<string, ChapterState>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [cleanupWord, setCleanupWord] = useState("");
+  const navigate = useNavigate();
   const [errorRows, setErrorRows] = useState<TaskErrorRow[]>([]);
   const errorCountRef = useRef(0);
   /** 分段标记：key → { mark, feedback } */
@@ -182,6 +187,8 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
   /** 该任务的搜索历史（最多最近 100 条，默认展示 10 条）。 */
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  /** 搜索框聚焦时展示历史下拉。 */
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   /** 未保存的编辑草稿：虚拟滚动卸载行后，重新挂载时据此恢复。 */
   const draftsRef = useRef(new Map<string, { text: string; phonetic: string }>());
@@ -674,7 +681,7 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
     }
   }, [dirtyCount, info, refreshLoadedChapters, saveAll, selected, taskId, tr]);
 
-  /** 导出：菜单 key 形如 "<scope>-<format>"。 */
+  /** 导出：创建后台导出任务，进度见「文件传输」页。菜单 key 形如 "<scope>-<format>"。 */
   const doExport = async (menuKey: string) => {
     const [scope, format] = menuKey.split("-") as [ExportScope, ExportFormat];
     if (scope === "selected" && selected.size === 0) {
@@ -683,24 +690,28 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
     }
     setExporting(true);
     try {
-      const { blob, filename } = await exportAudio(taskId, {
+      await createExportJob(taskId, {
         scope,
         format,
         keys: scope === "selected" ? [...selected] : undefined,
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      message.success(tr("detail.exportStarted", { filename }));
+      message.success(tr("transfer.exportStarted"));
+      navigate("/transfer");
     } catch (error) {
       message.error(getErrorMessage(error, tr("error.request")));
     } finally {
       setExporting(false);
+    }
+  };
+
+  /** 清理分段音频：unused=删除非最新旧副本；all=删除全部（需输入 delete 确认）。 */
+  const doCleanup = async (mode: "unused" | "all") => {
+    try {
+      await createCleanupJob(taskId, mode);
+      message.success(tr("transfer.cleanupStarted"));
+      navigate("/transfer");
+    } catch (error) {
+      message.error(getErrorMessage(error, tr("error.request")));
     }
   };
 
@@ -1025,13 +1036,12 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
   }, [info?.maxChars]);
 
   return (
-    <Drawer
-      open
-      onClose={onClose}
-      width={1180}
-      destroyOnClose
-      title={tr("detail.title", { name: taskName })}
-      extra={
+    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 48px)", minHeight: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flex: "0 0 auto" }}>
+        <Button icon={<ArrowLeftOutlined />} onClick={onClose}>{tr("act.back")}</Button>
+        <Typography.Text strong style={{ fontSize: 16 }}>{tr("detail.title", { name: taskName })}</Typography.Text>
+        <div style={{ flex: 1 }} />
+        {
         errorRows.length > 0 ? (
           <Popover
             trigger="click"
@@ -1075,9 +1085,9 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
             </Button>
           </Popover>
         ) : null
-      }
-    >
-      <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 110px)" }}>
+        }
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
       {loading ? (
         <div style={{ textAlign: "center", padding: 48 }}><Spin tip={tr("detail.loadingChapters")} /></div>
       ) : error ? (
@@ -1159,6 +1169,26 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
                 ]}
                 onSelect={(key) => void doExport(key)}
               />
+              <Dropdown
+                menu={{
+                  items: [
+                    { key: "unused", label: tr("pref.retentionModeUnused") },
+                    { key: "all", label: tr("pref.retentionModeAll"), danger: true },
+                  ],
+                  onClick: ({ key }) => {
+                    if (key === "all") {
+                      setCleanupWord("");
+                      setCleanupOpen(true);
+                    } else {
+                      void doCleanup("unused");
+                    }
+                  },
+                }}
+              >
+                <Button danger icon={<DeleteOutlined />} style={inkBtnStyle}>
+                  {tr("act.delete")}
+                </Button>
+              </Dropdown>
             </Space>
           </div>
 
@@ -1257,19 +1287,59 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
                 <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" }}>
                 {/* 分段文本搜索：与右侧分段区左边界对齐，同时与左侧「已选」同一行 */}
                 <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <Input
-                    allowClear
-                    prefix={<SearchOutlined />}
-                    placeholder={tr("detail.searchPlaceholder")}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onPressEnter={() => {
-                      if (!searchHits.length) return;
-                      setHitIndex((i) => (i + 1) % searchHits.length);
-                      setHitJumpToken((n) => n + 1);
-                    }}
-                    style={{ width: 280 }}
-                  />
+                  <Popover
+                    open={historyOpen && searchHistory.length > 0}
+                    trigger={[]}
+                    placement="bottomLeft"
+                    content={
+                      <div style={{ width: 360 }} onMouseDown={(e) => e.preventDefault()}>
+                        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                          {tr("detail.searchHistory")}
+                        </Typography.Text>
+                        <div className="search-history-list" data-expanded={historyExpanded} style={{ marginTop: 6 }}>
+                          {(historyExpanded ? searchHistory : searchHistory.slice(0, 10)).map((item) => (
+                            <Tag
+                              key={item.id}
+                              className="search-history-item"
+                              title={item.query}
+                              onClick={() => {
+                                applyHistory(item);
+                                setHistoryOpen(false);
+                              }}
+                            >
+                              {item.query}
+                            </Tag>
+                          ))}
+                        </div>
+                        {searchHistory.length > 10 && (
+                          <Button
+                            type="link"
+                            size="small"
+                            onClick={() => setHistoryExpanded((v) => !v)}
+                          >
+                            {historyExpanded ? tr("act.collapse") : tr("detail.more", { count: searchHistory.length })}
+                          </Button>
+                        )}
+                      </div>
+                    }
+                  >
+                    <Input
+                      allowClear
+                      prefix={<SearchOutlined />}
+                      placeholder={tr("detail.searchPlaceholder")}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setHistoryOpen(true)}
+                      onBlur={() => setHistoryOpen(false)}
+                      onPressEnter={() => {
+                        setHistoryOpen(false);
+                        if (!searchHits.length) return;
+                        setHitIndex((i) => (i + 1) % searchHits.length);
+                        setHitJumpToken((n) => n + 1);
+                      }}
+                      style={{ width: 280 }}
+                    />
+                  </Popover>
                   <Select
                     value={markFilter}
                     onChange={(value) => setMarkFilter(value)}
@@ -1320,34 +1390,6 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
                     {searching ? tr("detail.searching") : searchHits.length ? `${hitIndex + 1} / ${searchHits.length}` : "0 / 0"}
                   </Typography.Text>
                 </div>
-                {searchHistory.length > 0 && (
-                  <div className="search-history">
-                    <Typography.Text type="secondary" style={{ fontSize: 12, flex: "0 0 auto" }}>
-                      {tr("detail.searchHistory")}
-                    </Typography.Text>
-                    <div className="search-history-list" data-expanded={historyExpanded}>
-                      {(historyExpanded ? searchHistory : searchHistory.slice(0, 10)).map((item) => (
-                        <Tag
-                          key={item.id}
-                          className="search-history-item"
-                          title={item.query}
-                          onClick={() => applyHistory(item)}
-                        >
-                          {item.query}
-                        </Tag>
-                      ))}
-                    </div>
-                    {searchHistory.length > 10 && (
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={() => setHistoryExpanded((v) => !v)}
-                      >
-                        {historyExpanded ? tr("act.collapse") : tr("detail.more", { count: searchHistory.length })}
-                      </Button>
-                    )}
-                  </div>
-                )}
                 {pinned && !pinned.isHeader && (
                   <div
                     style={{
@@ -1432,6 +1474,22 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
       )}
 
       </div>
-    </Drawer>
+
+      <Modal
+        open={cleanupOpen}
+        title={tr("cleanup.confirmTitle")}
+        okText={tr("act.delete")}
+        okButtonProps={{ danger: true, disabled: cleanupWord !== "delete" }}
+        cancelText={tr("act.cancel")}
+        onCancel={() => setCleanupOpen(false)}
+        onOk={() => {
+          setCleanupOpen(false);
+          void doCleanup("all");
+        }}
+      >
+        <p>{tr("cleanup.confirmHint")}</p>
+        <Input value={cleanupWord} onChange={(e) => setCleanupWord(e.target.value)} placeholder="delete" />
+      </Modal>
+    </div>
   );
 }

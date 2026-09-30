@@ -243,6 +243,30 @@ export function textPrimaryOn(surface: string, primary: string, minRatio = 4.5):
   return candidate;
 }
 
+/** 任意填充色上的可读文字色（白或近黑，取对比度高者）。 */
+export function textOnColor(background: string): string {
+  return contrastRatio(background, LIGHT_TEXT_ON_PRIMARY) >= contrastRatio(background, DARK_TEXT_ON_PRIMARY)
+    ? LIGHT_TEXT_ON_PRIMARY
+    : DARK_TEXT_ON_PRIMARY;
+}
+
+/**
+ * 让背景 `base` 与目标色块 `target` 至少达到 minRatio 对比度：
+ * 不足时朝「与 target 更远」的黑/白方向逐步微调，保证色块在背景上可分辨。
+ */
+export function backgroundContrastingWith(target: string, base: string, minRatio = 3): string {
+  if (contrastRatio(base, target) >= minRatio) return base;
+  // 朝黑/白中「能达到更高对比度」的方向微调（中间色调两边的上限差异很大）。
+  const toward =
+    contrastRatio(target, "#000000") >= contrastRatio(target, "#FFFFFF") ? "#000000" : "#FFFFFF";
+  let candidate = base;
+  for (let t = 0.1; t <= 1.0001; t += 0.1) {
+    candidate = mixHex(base, toward, t);
+    if (contrastRatio(candidate, target) >= minRatio) return candidate;
+  }
+  return candidate;
+}
+
 /** 设置页展示用的色板：主/辅/强调/表面/文字 + 额外色。 */
 export function themeSwatches(palette: ThemePalette): string[] {
   return [

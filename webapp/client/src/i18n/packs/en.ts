@@ -2,7 +2,7 @@ import type { Messages } from "../locales";
 
 const en: Messages = {
   "nav.tasks": "Tasks", "nav.models": "Models", "nav.voices": "Voices", "nav.settings": "Settings",
-  "nav.logout": "Sign out", "act.add": "Add", "act.save": "Save", "act.cancel": "Cancel",
+  "nav.logout": "Sign out", "nav.home": "Home", "nav.settingsPage": "Settings", "act.back": "Back", "settings.display": "Display", "pref.fontSize": "Font size", "pref.fontSizeHint": "Adjust the interface text size", "pref.retention": "Audio retention", "pref.retentionHint": "How long generated audio is kept, and what to delete when it expires", "pref.retentionMode": "Deletion mode", "pref.retentionModeAll": "Delete all", "pref.retentionModeUnused": "Delete unused", "pref.week": "wk", "pref.month": "mo", "nav.transfer": "Transfer", "transfer.empty": "No transfer jobs", "transfer.download": "Download", "transfer.logs": "Logs", "transfer.statusQueued": "Queued", "transfer.statusRunning": "Running", "transfer.statusDone": "Done", "transfer.statusError": "Failed", "transfer.exportStarted": "Export started; check progress on the Transfer page", "transfer.cleanupStarted": "Cleanup started; check progress on the Transfer page", "cleanup.confirmTitle": "Confirm deleting all segment audio", "cleanup.confirmHint": "This cannot be undone. Type delete to confirm.", "act.add": "Add", "act.save": "Save", "act.cancel": "Cancel",
   "act.delete": "Delete", "act.reset": "Reset", "act.run": "Run", "act.pause": "Pause",
   "act.resume": "Resume", "act.apply": "Apply", "act.login": "Sign in", "act.search": "Search",
   "st.idle": "Idle", "st.segmenting": "Segmenting", "st.ready": "Ready", "st.running": "Synthesizing",

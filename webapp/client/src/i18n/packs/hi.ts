@@ -2,7 +2,7 @@ import type { Messages } from "../locales";
 
 const hi: Messages = {
   "nav.tasks": "कार्य", "nav.models": "मॉडल", "nav.voices": "आवाज़", "nav.settings": "सेटिंग्स",
-  "nav.logout": "साइन आउट", "act.add": "जोड़ें", "act.save": "सहेजें", "act.cancel": "रद्द करें",
+  "nav.logout": "साइन आउट", "nav.home": "मुख्य पृष्ठ", "nav.settingsPage": "सेटिंग्स", "act.back": "वापस", "settings.display": "प्रदर्शन", "pref.fontSize": "फ़ॉन्ट आकार", "pref.fontSizeHint": "इंटरफ़ेस टेक्स्ट का आकार समायोजित करें", "pref.retention": "ऑडियो प्रतिधारण", "pref.retentionHint": "उत्पन्न ऑडियो कितने समय तक रखा जाए और समाप्ति पर क्या हटाया जाए", "pref.retentionMode": "विलोपन मोड", "pref.retentionModeAll": "सभी हटाएँ", "pref.retentionModeUnused": "अप्रयुक्त हटाएँ", "pref.week": "सप्ताह", "pref.month": "माह", "nav.transfer": "फ़ाइल स्थानांतरण", "transfer.empty": "कोई स्थानांतरण कार्य नहीं", "transfer.download": "डाउनलोड", "transfer.logs": "लॉग", "transfer.statusQueued": "कतार में", "transfer.statusRunning": "चल रहा है", "transfer.statusDone": "पूर्ण", "transfer.statusError": "विफल", "transfer.exportStarted": "निर्यात शुरू; प्रगति स्थानांतरण पृष्ठ पर देखें", "transfer.cleanupStarted": "सफ़ाई शुरू; प्रगति स्थानांतरण पृष्ठ पर देखें", "cleanup.confirmTitle": "सभी खंड ऑडियो हटाने की पुष्टि करें", "cleanup.confirmHint": "यह पूर्ववत नहीं किया जा सकता। पुष्टि के लिए delete लिखें।", "act.add": "जोड़ें", "act.save": "सहेजें", "act.cancel": "रद्द करें",
   "act.delete": "हटाएँ", "act.reset": "रीसेट", "act.run": "चलाएँ", "act.pause": "रोकें",
   "act.resume": "जारी रखें", "act.apply": "लागू करें", "act.login": "साइन इन", "act.search": "खोजें",
   "st.idle": "निष्क्रिय", "st.segmenting": "खंडन हो रहा है", "st.ready": "तैयार", "st.running": "संश्लेषण",

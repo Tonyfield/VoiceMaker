@@ -2,7 +2,7 @@ import type { Messages } from "../locales";
 
 const vi: Messages = {
   "nav.tasks": "Tác vụ", "nav.models": "Mô hình", "nav.voices": "Giọng nói", "nav.settings": "Cài đặt",
-  "nav.logout": "Đăng xuất", "act.add": "Thêm", "act.save": "Lưu", "act.cancel": "Hủy",
+  "nav.logout": "Đăng xuất", "nav.home": "Trang chính", "nav.settingsPage": "Cài đặt", "act.back": "Quay lại", "settings.display": "Hiển thị", "pref.fontSize": "Cỡ chữ", "pref.fontSizeHint": "Điều chỉnh cỡ chữ giao diện", "pref.retention": "Lưu trữ âm thanh", "pref.retentionHint": "Thời gian lưu âm thanh đã tạo và cách xóa khi hết hạn", "pref.retentionMode": "Chế độ xóa", "pref.retentionModeAll": "Xóa tất cả", "pref.retentionModeUnused": "Xóa không dùng", "pref.week": "tuần", "pref.month": "tháng", "nav.transfer": "Truyền tệp", "transfer.empty": "Không có tác vụ truyền tệp", "transfer.download": "Tải xuống", "transfer.logs": "Nhật ký", "transfer.statusQueued": "Đang chờ", "transfer.statusRunning": "Đang chạy", "transfer.statusDone": "Hoàn tất", "transfer.statusError": "Thất bại", "transfer.exportStarted": "Đã bắt đầu xuất; xem tiến độ ở trang Truyền tệp", "transfer.cleanupStarted": "Đã bắt đầu dọn dẹp; xem tiến độ ở trang Truyền tệp", "cleanup.confirmTitle": "Xác nhận xóa toàn bộ âm thanh phân đoạn", "cleanup.confirmHint": "Không thể hoàn tác. Nhập delete để xác nhận.", "act.add": "Thêm", "act.save": "Lưu", "act.cancel": "Hủy",
   "act.delete": "Xóa", "act.reset": "Đặt lại", "act.run": "Chạy", "act.pause": "Tạm dừng",
   "act.resume": "Tiếp tục", "act.apply": "Áp dụng", "act.login": "Đăng nhập", "act.search": "Tìm kiếm",
   "st.idle": "Rảnh", "st.segmenting": "Đang phân đoạn", "st.ready": "Sẵn sàng", "st.running": "Đang tổng hợp",

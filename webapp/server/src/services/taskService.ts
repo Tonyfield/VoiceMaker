@@ -85,6 +85,12 @@ export const taskService = {
     return db.prepare("SELECT * FROM tasks WHERE id = ?").get(id) as unknown as TaskRow | undefined;
   },
 
+  /** 全部任务 id（批量清理用）。 */
+  listIds(): number[] {
+    const rows = db.prepare("SELECT id FROM tasks").all() as unknown as Array<{ id: number }>;
+    return rows.map((r) => r.id);
+  },
+
   exists(name: string): boolean {
     return !!db.prepare("SELECT id FROM tasks WHERE name = ?").get(name);
   },
@@ -311,8 +317,28 @@ export const taskService = {
     for (const name of fs.readdirSync(dir)) {
       const parsed = parseAudioFileName(name);
       if (!parsed) continue;
-      if (!fs.statSync(path.join(dir, name)).isFile()) continue;
       out.push({ name, ...parsed });
+    }
+    return out;
+  },
+
+  /** 音频文件 + 文件系统信息（保留期清理用）。 */
+  listAudioFilesWithStat(
+    id: number
+  ): Array<ParsedAudioName & { name: string; path: string; mtimeMs: number; size: number }> {
+    const dir = taskDir(id);
+    if (!fs.existsSync(dir)) return [];
+    const out: Array<ParsedAudioName & { name: string; path: string; mtimeMs: number; size: number }> = [];
+    for (const name of fs.readdirSync(dir)) {
+      const parsed = parseAudioFileName(name);
+      if (!parsed) continue;
+      const p = path.join(dir, name);
+      try {
+        const st = fs.statSync(p);
+        out.push({ name, ...parsed, path: p, mtimeMs: st.mtimeMs, size: st.size });
+      } catch {
+        /* 文件在读取间隙被删除则跳过 */
+      }
     }
     return out;
   },

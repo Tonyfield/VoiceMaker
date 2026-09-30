@@ -11,7 +11,7 @@ import { textOnPrimary, textPrimaryOn } from "./themes";
 import "./index.css";
 
 function ThemedApp() {
-  const { palette } = useTheme();
+  const { palette, fontScale } = useTheme();
   const { locale } = useI18n();
   // antd 组件内置文案按需加载：默认中文，切换到其他语种时再拉取对应语言包。
   const [antdLocale, setAntdLocale] = useState(DEFAULT_ANTD_LOCALE);
@@ -63,6 +63,14 @@ function ThemedApp() {
     };
   }, [vars]);
 
+  // 字号设置：同步 antd token（见下）与根字号，作用于 antd 组件及 rem 文本。
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${Math.round(16 * fontScale)}px`;
+    return () => {
+      document.documentElement.style.fontSize = "";
+    };
+  }, [fontScale]);
+
   return (
     <ConfigProvider
       locale={antdLocale}
@@ -70,7 +78,10 @@ function ThemedApp() {
       theme={{
         algorithm: palette.dark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
-          fontSize: 14,
+          fontSize: Math.round(14 * fontScale),
+          fontSizeSM: Math.round(12 * fontScale),
+          fontSizeLG: Math.round(16 * fontScale),
+          fontSizeXL: Math.round(20 * fontScale),
           colorPrimary: palette.primary,
           colorInfo: palette.primary,
           colorLink: primaryText,
@@ -88,6 +99,16 @@ function ThemedApp() {
           colorBorder: palette.dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.22)",
           colorBorderSecondary: palette.dark ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.10)",
           borderRadius: 12,
+        },
+        // 菜单选中项：统一改为「主色实底 + 对比色文字」，避免浅色主题下
+        // 浅色底 + 主色字导致选中项对比度过低（马卡龙/复古/莫兰迪等）。
+        components: {
+          Menu: {
+            itemSelectedBg: palette.primary,
+            itemSelectedColor: onPrimary,
+            darkItemSelectedBg: palette.primary,
+            darkItemSelectedColor: onPrimary,
+          },
         },
       }}
     >

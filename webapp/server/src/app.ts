@@ -7,6 +7,7 @@ import { authRouter } from "./routes/auth";
 import { modelsRouter } from "./routes/models";
 import { voicesRouter } from "./routes/voices";
 import { tasksRouter } from "./routes/tasks";
+import { jobsRouter } from "./routes/jobs";
 import { namedEntitiesRouter } from "./routes/namedEntities";
 import {
   createRequestLogContext,
@@ -89,6 +90,7 @@ export function createApp(): express.Express {
   app.use("/api/models", modelsRouter);
   app.use("/api/voices", voicesRouter);
   app.use("/api/tasks", tasksRouter);
+  app.use("/api/jobs", jobsRouter);
   app.use("/api/named-entities", namedEntitiesRouter);
 
   // serve built frontend if present (production)

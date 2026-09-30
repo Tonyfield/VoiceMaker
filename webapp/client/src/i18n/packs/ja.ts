@@ -2,7 +2,7 @@ import type { Messages } from "../locales";
 
 const ja: Messages = {
   "nav.tasks": "タスク", "nav.models": "モデル設定", "nav.voices": "音声設定", "nav.settings": "ユーザー設定",
-  "nav.logout": "ログアウト", "act.add": "追加", "act.save": "保存", "act.cancel": "キャンセル",
+  "nav.logout": "ログアウト", "nav.home": "ホーム", "nav.settingsPage": "設定", "act.back": "戻る", "settings.display": "表示", "pref.fontSize": "文字サイズ", "pref.fontSizeHint": "画面の文字サイズを調整", "pref.retention": "音声の保持", "pref.retentionHint": "生成音声の保持期間と期限切れ時の削除方法", "pref.retentionMode": "削除方法", "pref.retentionModeAll": "すべて削除", "pref.retentionModeUnused": "未使用を削除", "pref.week": "週間", "pref.month": "ヶ月", "nav.transfer": "ファイル転送", "transfer.empty": "転送タスクはありません", "transfer.download": "ダウンロード", "transfer.logs": "ログ", "transfer.statusQueued": "待機中", "transfer.statusRunning": "実行中", "transfer.statusDone": "完了", "transfer.statusError": "失敗", "transfer.exportStarted": "エクスポートを開始しました。「ファイル転送」ページで進捗を確認してください", "transfer.cleanupStarted": "クリーンアップを開始しました。「ファイル転送」ページで進捗を確認してください", "cleanup.confirmTitle": "全セグメント音声の削除を確認", "cleanup.confirmHint": "この操作は元に戻せません。確認するには delete と入力してください。", "act.add": "追加", "act.save": "保存", "act.cancel": "キャンセル",
   "act.delete": "削除", "act.reset": "リセット", "act.run": "実行", "act.pause": "一時停止",
   "act.resume": "再開", "act.apply": "適用", "act.login": "ログイン", "act.search": "検索",
   "st.idle": "待機", "st.segmenting": "分割中", "st.ready": "合成待ち", "st.running": "合成中",

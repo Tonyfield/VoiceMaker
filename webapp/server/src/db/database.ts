@@ -16,6 +16,7 @@ export function initDatabase(): void {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT NOT NULL UNIQUE,
       password_sha256 TEXT NOT NULL,
+      preferences TEXT NOT NULL DEFAULT '{}',
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -117,9 +118,18 @@ export function initDatabase(): void {
     CREATE INDEX IF NOT EXISTS idx_task_search_history_task ON task_search_history(task_id, id);
   `);
 
+  ensureUserPreferencesColumn();
   seedAdmin();
   seedNamedEntities();
   logger.success("✅ 数据库初始化完成");
+}
+
+/** 旧库迁移：为 users 补 preferences 列（JSON 偏好）。 */
+function ensureUserPreferencesColumn(): void {
+  const cols = db.prepare("PRAGMA table_info(users)").all() as unknown as Array<{ name: string }>;
+  if (cols.some((c) => c.name === "preferences")) return;
+  db.exec("ALTER TABLE users ADD COLUMN preferences TEXT NOT NULL DEFAULT '{}'");
+  logger.info("🧩 users 表已补充 preferences 列");
 }
 
 function seedAdmin(): void {

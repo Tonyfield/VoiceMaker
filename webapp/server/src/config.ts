@@ -17,6 +17,8 @@ export const LOG_DIR = path.resolve(
 export const DB_PATH = path.join(DATA_DIR, "voicecloner.db");
 export const TASKS_DIR = path.join(DATA_DIR, "tasks");
 export const VOICES_DIR = path.join(DATA_DIR, "voices");
+/** 导出/清理等后台任务的临时产物目录。 */
+export const JOBS_DIR = path.join(DATA_DIR, "jobs");
 
 export const CEDICT_PATH = path.resolve(
   process.env.CEDICT_PATH ||
@@ -52,7 +54,7 @@ export const DEFAULT_MAX_CHARS_PER_SEGMENT = 100;
 export const TTS_DEFAULT_API_KEY = "sk-indextts-v2_5_20260902";
 
 export function ensureDirs(): void {
-  for (const dir of [DATA_DIR, LOG_DIR, TASKS_DIR, VOICES_DIR]) {
+  for (const dir of [DATA_DIR, LOG_DIR, TASKS_DIR, VOICES_DIR, JOBS_DIR]) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }

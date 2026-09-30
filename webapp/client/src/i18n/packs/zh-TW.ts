@@ -2,7 +2,7 @@ import type { Messages } from "../locales";
 
 const zhTW: Messages = {
   "nav.tasks": "工作任務", "nav.models": "模型設定", "nav.voices": "聲音設定", "nav.settings": "使用者設定",
-  "nav.logout": "登出", "act.add": "新增", "act.save": "儲存", "act.cancel": "取消", "act.delete": "刪除",
+  "nav.logout": "登出", "nav.home": "主頁面", "nav.settingsPage": "設定", "act.back": "返回", "settings.display": "顯示設定", "pref.fontSize": "字體字號", "pref.fontSizeHint": "調整介面文字大小", "pref.retention": "音訊保留", "pref.retentionHint": "後台保留生成音訊的時長與到期刪除口徑", "pref.retentionMode": "刪除口徑", "pref.retentionModeAll": "刪除全部", "pref.retentionModeUnused": "刪除無用", "pref.week": "週", "pref.month": "個月", "nav.transfer": "檔案傳輸", "transfer.empty": "暫無傳輸任務", "transfer.download": "下載", "transfer.logs": "日誌", "transfer.statusQueued": "排隊中", "transfer.statusRunning": "進行中", "transfer.statusDone": "已完成", "transfer.statusError": "失敗", "transfer.exportStarted": "已開始匯出，請在「檔案傳輸」頁查看進度", "transfer.cleanupStarted": "已開始清理，請在「檔案傳輸」頁查看進度", "cleanup.confirmTitle": "確認刪除全部分段音訊", "cleanup.confirmHint": "此操作不可撤銷。請輸入 delete 以確認。", "act.add": "新增", "act.save": "儲存", "act.cancel": "取消", "act.delete": "刪除",
   "act.reset": "重設", "act.run": "執行", "act.pause": "暫停", "act.resume": "繼續", "act.apply": "套用",
   "act.login": "登入", "act.search": "搜尋", "st.idle": "閒置", "st.segmenting": "分段中", "st.ready": "待合成",
   "st.running": "合成中", "st.paused": "已暫停", "st.done": "完成", "st.error": "錯誤", "task.name": "任務名稱",

@@ -10,7 +10,10 @@ import { MAX_ITEMS as MAX_HISTORY_ITEMS, searchHistoryService } from "../service
 import { prepareTask, requestPause, requestStop, resumeTask, runTask, segmentMaxChars, selectTtsKeys, synthesizeSegment, synthesizeTask } from "../services/taskRunner";
 import { errorService } from "../services/errorService";
 import { segmentLogService } from "../services/segmentLogService";
-import { buildExport, type ExportFormat } from "../services/exporter";
+import { buildExport, exportFilename, exportToFile, type ExportFormat, type ExportScope } from "../services/exporter";
+import { jobService, jobDir, yieldLoop } from "../services/jobService";
+import { cleanupTaskAudio } from "../services/cleanupService";
+import { requireAuth } from "../auth/middleware";
 import { sendError } from "../shared/errors";
 import { parseBooleanFlag, parseJsonObject } from "../shared/json";
 import { logger } from "../logger";
@@ -710,6 +713,64 @@ tasksRouter.post("/:id/export", async (req: Request, res: Response) => {
   } catch (e) {
     sendError(res, 400, e);
   }
+});
+
+/** 创建后台导出任务（低优先级；进度见 /api/jobs）。 */
+tasksRouter.post("/:id/export-jobs", requireAuth, (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const task = taskService.get(id);
+  if (!task) {
+    res.status(404).json({ error: "任务不存在" });
+    return;
+  }
+  const scope = String((req as any).body?.scope || "chapters");
+  const format = String((req as any).body?.format || "wav").toLowerCase();
+  if (scope !== "chapters" && scope !== "selected") {
+    res.status(400).json({ error: "scope 仅支持 chapters / selected" });
+    return;
+  }
+  if (!["mp3", "wav", "zip"].includes(format)) {
+    res.status(400).json({ error: "导出格式仅支持 mp3 / wav / zip" });
+    return;
+  }
+  const keys = Array.isArray((req as any).body?.keys)
+    ? ((req as any).body.keys.map(String) as string[])
+    : undefined;
+
+  const job = jobService.create("export", id, task.name);
+  const filename = exportFilename(task.name, scope as ExportScope, format as ExportFormat);
+  const destPath = path.join(jobDir(job.id), filename);
+  jobService.run(job.id, async (ctx) => {
+    await exportToFile(
+      id,
+      { scope: scope as ExportScope, format: format as ExportFormat, keys },
+      destPath,
+      ctx.report,
+      yieldLoop
+    );
+    return { resultPath: destPath, resultName: filename };
+  });
+  res.json({ jobId: job.id });
+});
+
+/** 创建后台清理任务：unused=删除非最新旧副本；all=删除该任务全部分段音频。 */
+tasksRouter.post("/:id/cleanup-jobs", requireAuth, (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const task = taskService.get(id);
+  if (!task) {
+    res.status(404).json({ error: "任务不存在" });
+    return;
+  }
+  const mode = String((req as any).body?.mode || "unused");
+  if (mode !== "unused" && mode !== "all") {
+    res.status(400).json({ error: "mode 仅支持 unused / all" });
+    return;
+  }
+  const job = jobService.create("cleanup", id, task.name);
+  jobService.run(job.id, async (ctx) => {
+    await cleanupTaskAudio(id, mode, ctx, yieldLoop);
+  });
+  res.json({ jobId: job.id });
 });
 
 /** 搜索历史：每个任务最多保留最近 100 条。 */

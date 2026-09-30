@@ -5,8 +5,7 @@ import {
   SettingOutlined,
   AudioOutlined,
   BgColorsOutlined,
-  UserOutlined,
-  SoundOutlined,
+  CloudUploadOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "./auth";
@@ -15,9 +14,9 @@ import { useI18n } from "./i18n";
 import type { Messages } from "./i18n/locales";
 import LoginPage from "./pages/LoginPage";
 import TasksPage from "./pages/TasksPage";
-import ModelsPage from "./pages/ModelsPage";
-import VoicesPage from "./pages/VoicesPage";
-import UserSettingsPage from "./pages/UserSettingsPage";
+import TaskWorkspacePage from "./pages/TaskWorkspacePage";
+import TransferPage from "./pages/TransferPage";
+import SettingsPage from "./pages/SettingsPage";
 
 const { Sider, Content } = Layout;
 
@@ -31,15 +30,17 @@ export default function App() {
   if (!token) return <LoginPage />;
 
   const menuItems = [
-    { key: "tasks", icon: <FolderOpenOutlined />, label: t("nav.tasks") },
-    { key: "models", icon: <SettingOutlined />, label: t("nav.models") },
-    { key: "voices", icon: <SoundOutlined />, label: t("nav.voices") },
-    { key: "settings", icon: <UserOutlined />, label: t("nav.settings") },
+    { key: "tasks", icon: <FolderOpenOutlined />, label: t("nav.home") },
+    { key: "transfer", icon: <CloudUploadOutlined />, label: t("nav.transfer") },
+    { key: "settings", icon: <SettingOutlined />, label: t("nav.settingsPage") },
   ];
 
-  // 导航高亮由路由派生，刷新/前进后退都能保持一致
-  const selected =
-    menuItems.find((item) => pathname.startsWith(`/${item.key}`))?.key ?? "tasks";
+  // 导航高亮由路由派生。
+  const selected = pathname.startsWith("/settings")
+    ? "settings"
+    : pathname.startsWith("/transfer")
+      ? "transfer"
+      : "tasks";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -82,9 +83,9 @@ export default function App() {
       <Content className="content-area">
         <Routes>
           <Route path="/tasks" element={<TasksPage />} />
-          <Route path="/models" element={<ModelsPage />} />
-          <Route path="/voices" element={<VoicesPage />} />
-          <Route path="/settings" element={<UserSettingsPage />} />
+          <Route path="/tasks/:id" element={<TaskWorkspacePage />} />
+          <Route path="/transfer" element={<TransferPage />} />
+          <Route path="/settings/*" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/tasks" replace />} />
         </Routes>
       </Content>

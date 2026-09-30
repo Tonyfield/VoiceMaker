@@ -3,7 +3,7 @@ const zhCN = {
   "nav.models": "模型设置",
   "nav.voices": "声音设置",
   "nav.settings": "用户设置",
-  "nav.logout": "退出登录",
+  "nav.logout": "退出登录", "nav.home": "主页面", "nav.settingsPage": "设置", "act.back": "返回", "settings.display": "显示设置", "pref.fontSize": "字体字号", "pref.fontSizeHint": "调整界面文字大小", "pref.retention": "音频保留", "pref.retentionHint": "后台保留生成音频的时长与到期删除口径", "pref.retentionMode": "删除口径", "pref.retentionModeAll": "删除全部", "pref.retentionModeUnused": "删除无用", "pref.week": "周", "pref.month": "个月", "nav.transfer": "文件传输", "transfer.empty": "暂无传输任务", "transfer.download": "下载", "transfer.logs": "日志", "transfer.statusQueued": "排队中", "transfer.statusRunning": "进行中", "transfer.statusDone": "已完成", "transfer.statusError": "失败", "transfer.exportStarted": "已开始导出，请在「文件传输」页查看进度", "transfer.cleanupStarted": "已开始清理，请在「文件传输」页查看进度", "cleanup.confirmTitle": "确认删除全部分段音频", "cleanup.confirmHint": "此操作不可撤销。请输入 delete 以确认。",
   "act.add": "添加",
   "act.save": "保存",
   "act.cancel": "取消",
