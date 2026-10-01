@@ -3,12 +3,10 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 import { useTheme } from "../theme";
 import { textOnPrimary } from "../themes";
 import { useI18n } from "../i18n";
-import ModelsPage from "./ModelsPage";
-import VoicesPage from "./VoicesPage";
 import DisplaySettingsPage from "./DisplaySettingsPage";
 import UserSettingsPage from "./UserSettingsPage";
 
-/** 设置页：左侧子导航（模型/声音/显示/用户）+ 右侧面板。 */
+/** 设置页：左侧子导航（显示/账号）+ 右侧面板。 */
 export default function SettingsPage() {
   const { t } = useI18n();
   const { palette } = useTheme();
@@ -17,12 +15,10 @@ export default function SettingsPage() {
   const { pathname } = useLocation();
 
   const items = [
-    { key: "models", label: t("nav.models") },
-    { key: "voices", label: t("nav.voices") },
     { key: "display", label: t("settings.display") },
     { key: "account", label: t("nav.settings") },
   ];
-  const active = items.find((item) => pathname.startsWith(`/settings/${item.key}`))?.key ?? "models";
+  const active = items.find((item) => pathname.startsWith(`/settings/${item.key}`))?.key ?? "display";
   const onPrimary = textOnPrimary(palette.primary);
 
   return (
@@ -51,12 +47,10 @@ export default function SettingsPage() {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <Routes>
-          <Route index element={<Navigate to="models" replace />} />
-          <Route path="models" element={<ModelsPage />} />
-          <Route path="voices" element={<VoicesPage />} />
+          <Route index element={<Navigate to="display" replace />} />
           <Route path="display" element={<DisplaySettingsPage />} />
           <Route path="account" element={<UserSettingsPage />} />
-          <Route path="*" element={<Navigate to="models" replace />} />
+          <Route path="*" element={<Navigate to="display" replace />} />
         </Routes>
       </div>
     </div>

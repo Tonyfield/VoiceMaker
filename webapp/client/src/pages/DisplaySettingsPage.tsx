@@ -1,14 +1,23 @@
-import { Card, Segmented, Tag, theme, Typography } from "antd";
-import { useTheme, FONT_SCALES } from "../theme";
+import { Segmented, Select, Tag, theme, Typography } from "antd";
+import { useTheme, FONT_SCALES, fontsForPack } from "../theme";
 import { backgroundContrastingWith, textOnColor, themeSwatches } from "../themes";
 import { useI18n } from "../i18n";
 import type { Messages } from "../i18n/locales";
 import LanguageSelect from "../components/LanguageSelect";
+import SettingsCard from "../components/settings/SettingsCard";
 
-/** 显示设置：语言、主题配色、字体字号。 */
+/** 显示设置：语言、主题配色、界面字体、字号。 */
 export default function DisplaySettingsPage() {
-  const { t } = useI18n();
-  const { paletteId, setPaletteId, palettes, fontScale, setFontScale } = useTheme();
+  const { t, locale } = useI18n();
+  const {
+    paletteId,
+    setPaletteId,
+    palettes,
+    fontScale,
+    setFontScale,
+    fontFamilyId,
+    setFontFamilyId,
+  } = useTheme();
   const { token } = theme.useToken();
 
   return (
@@ -17,22 +26,21 @@ export default function DisplaySettingsPage() {
         {t("settings.display")}
       </Typography.Title>
 
-      <Card className="flat-card" title={t("pref.language")} style={{ borderRadius: 16, marginBottom: 16 }}>
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          {t("pref.languageHint")}
-        </Typography.Text>
-        <div style={{ marginTop: 12 }}>
-          <LanguageSelect />
-        </div>
-      </Card>
+      <SettingsCard
+        title={t("pref.language")}
+        subtitle={t("pref.languageHint")}
+        style={{ marginBottom: 16 }}
+      >
+        <LanguageSelect />
+      </SettingsCard>
 
-      <Card className="flat-card" title={t("settings.theme")} style={{ borderRadius: 16, marginBottom: 16 }}>
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          {t("settings.themeHint")}
-        </Typography.Text>
+      <SettingsCard
+        title={t("settings.theme")}
+        subtitle={t("settings.themeHint")}
+        style={{ marginBottom: 16 }}
+      >
         <div
           style={{
-            marginTop: 12,
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
             gap: 12,
@@ -91,23 +99,36 @@ export default function DisplaySettingsPage() {
             );
           })}
         </div>
-      </Card>
+      </SettingsCard>
 
-      <Card className="flat-card" title={t("pref.fontSize")} style={{ borderRadius: 16 }}>
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          {t("pref.fontSizeHint")}
-        </Typography.Text>
-        <div style={{ marginTop: 12 }}>
-          <Segmented
-            value={fontScale}
-            onChange={(value) => setFontScale(Number(value))}
-            options={FONT_SCALES.map((scale) => ({
-              label: `${Math.round(scale * 100)}%`,
-              value: scale,
-            }))}
-          />
-        </div>
-      </Card>
+      <SettingsCard
+        title={t("pref.fontFamily")}
+        subtitle={t("pref.fontFamilyHint")}
+        style={{ marginBottom: 16 }}
+      >
+        <Select
+          value={fontFamilyId}
+          onChange={(value) => setFontFamilyId(value)}
+          style={{ width: 240 }}
+          options={fontsForPack(locale.pack).map((font) => ({
+            value: font.id,
+            label: t(font.labelKey as keyof Messages),
+            // 选项预览用该字体本身渲染
+            style: { fontFamily: font.stack },
+          }))}
+        />
+      </SettingsCard>
+
+      <SettingsCard title={t("pref.fontSize")} subtitle={t("pref.fontSizeHint")}>
+        <Segmented
+          value={fontScale}
+          onChange={(value) => setFontScale(Number(value))}
+          options={FONT_SCALES.map((scale) => ({
+            label: `${Math.round(scale * 100)}%`,
+            value: scale,
+          }))}
+        />
+      </SettingsCard>
     </div>
   );
 }

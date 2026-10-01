@@ -14,10 +14,16 @@ export type CountryCode =
   | "kr" | "fr" | "de" | "mx" | "br" | "ru" | "vi" | "mr"
   | "es" | "sa" | "it";
 
+/** 语种（ISO 639-1）：同语种的不同国别在选择器里归为一组。 */
+export type LangCode =
+  | "zh" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "pt" | "ru" | "vi" | "hi" | "ar" | "it";
+
 export interface LocaleDef {
   /** 唯一 id（= BCP-47 语言标记，用于 <html lang> 与持久化） */
   id: string;
   country: CountryCode;
+  /** 语种（ISO 639-1） */
+  lang: LangCode;
   /** 语言文案包 key（同语言国家复用） */
   pack: MessagePack;
   /** public/country_flag 下的国旗文件 */
@@ -27,25 +33,25 @@ export interface LocaleDef {
 }
 
 export const LOCALES: LocaleDef[] = [
-  { id: "zh-CN", country: "cn", pack: "zh-CN", flag: "china-flag-circular-17757.svg" },
-  { id: "zh-TW", country: "tw", pack: "zh-TW", flag: "taiwan-flag-circular-24546.svg" },
-  { id: "zh-HK", country: "hk", pack: "zh-TW", flag: "hong-kong-flag-circle-round-25521.svg" },
-  { id: "en-US", country: "us", pack: "en", flag: "usa-flag-circular-17882.svg" },
-  { id: "en-GB", country: "gb", pack: "en", flag: "uk-flag-circular-17883.svg" },
-  { id: "en-JM", country: "jm", pack: "en", flag: "jamaica-flag-circular-17804.svg" },
-  { id: "ja-JP", country: "jp", pack: "ja", flag: "japan-flag-circular-17764.svg" },
-  { id: "ko-KR", country: "kr", pack: "ko", flag: "south-korea-flag-circular-17853.svg" },
-  { id: "fr-FR", country: "fr", pack: "fr", flag: "france-flag-circular-17753.svg" },
-  { id: "de-DE", country: "de", pack: "de", flag: "germany-flag-circular-17755.svg" },
-  { id: "es-MX", country: "mx", pack: "es", flag: "mexico-flag-circular-17845.svg" },
-  { id: "es-ES", country: "es", pack: "es", flag: "spain-flag-circular-17884.svg" },
-  { id: "pt-BR", country: "br", pack: "pt", flag: "brazil-flag-circular-17847.svg" },
-  { id: "ru-RU", country: "ru", pack: "ru", flag: "russia-flag-circular-17765.svg" },
-  { id: "vi-VN", country: "vi", pack: "vi", flag: "vietnam-flag-circular-17769.svg" },
-  { id: "hi-IN", country: "in", pack: "hi", flag: "india-flag-circular-17791.svg" },
-  { id: "ar-MR", country: "mr", pack: "ar", flag: "mauritania-flag-circular-17817.svg", rtl: true },
-  { id: "ar-SA", country: "sa", pack: "ar", flag: "saudi-arabia-circle-rounded-flag-24368.svg", rtl: true },
-  { id: "it-IT", country: "it", pack: "it", flag: "italy-flag-circular-17751.svg" },
+  { id: "zh-CN", country: "cn", lang: "zh", pack: "zh-CN", flag: "china-flag-circular-17757.svg" },
+  { id: "zh-TW", country: "tw", lang: "zh", pack: "zh-TW", flag: "taiwan-flag-circular-24546.svg" },
+  { id: "zh-HK", country: "hk", lang: "zh", pack: "zh-TW", flag: "hong-kong-flag-circle-round-25521.svg" },
+  { id: "en-US", country: "us", lang: "en", pack: "en", flag: "usa-flag-circular-17882.svg" },
+  { id: "en-GB", country: "gb", lang: "en", pack: "en", flag: "uk-flag-circular-17883.svg" },
+  { id: "en-JM", country: "jm", lang: "en", pack: "en", flag: "jamaica-flag-circular-17804.svg" },
+  { id: "ja-JP", country: "jp", lang: "ja", pack: "ja", flag: "japan-flag-circular-17764.svg" },
+  { id: "ko-KR", country: "kr", lang: "ko", pack: "ko", flag: "south-korea-flag-circular-17853.svg" },
+  { id: "fr-FR", country: "fr", lang: "fr", pack: "fr", flag: "france-flag-circular-17753.svg" },
+  { id: "de-DE", country: "de", lang: "de", pack: "de", flag: "germany-flag-circular-17755.svg" },
+  { id: "es-MX", country: "mx", lang: "es", pack: "es", flag: "mexico-flag-circular-17845.svg" },
+  { id: "es-ES", country: "es", lang: "es", pack: "es", flag: "spain-flag-circular-17884.svg" },
+  { id: "pt-BR", country: "br", lang: "pt", pack: "pt", flag: "brazil-flag-circular-17847.svg" },
+  { id: "ru-RU", country: "ru", lang: "ru", pack: "ru", flag: "russia-flag-circular-17765.svg" },
+  { id: "vi-VN", country: "vi", lang: "vi", pack: "vi", flag: "vietnam-flag-circular-17769.svg" },
+  { id: "hi-IN", country: "in", lang: "hi", pack: "hi", flag: "india-flag-circular-17791.svg" },
+  { id: "ar-MR", country: "mr", lang: "ar", pack: "ar", flag: "mauritania-flag-circular-17817.svg", rtl: true },
+  { id: "ar-SA", country: "sa", lang: "ar", pack: "ar", flag: "saudi-arabia-circle-rounded-flag-24368.svg", rtl: true },
+  { id: "it-IT", country: "it", lang: "it", pack: "it", flag: "italy-flag-circular-17751.svg" },
 ];
 
 export const DEFAULT_LOCALE_ID = "zh-CN";
@@ -162,6 +168,79 @@ const COUNTRY_NAMES: Record<MessagePack, Record<CountryCode, string>> = {
 /** 国名（以当前语种显示），缺失时回退英文。 */
 export function countryName(pack: MessagePack, country: CountryCode): string {
   return COUNTRY_NAMES[pack]?.[country] ?? COUNTRY_NAMES.en[country] ?? country;
+}
+
+// ---------- 语种名（按当前语种显示） ----------
+
+const LANGUAGE_NAMES: Partial<Record<MessagePack, Record<LangCode, string>>> = {
+  "zh-CN": {
+    zh: "汉语", en: "英语", ja: "日语", ko: "韩语", fr: "法语", de: "德语",
+    es: "西班牙语", pt: "葡萄牙语", ru: "俄语", vi: "越南语", hi: "印地语",
+    ar: "阿拉伯语", it: "意大利语",
+  },
+  "zh-TW": {
+    zh: "漢語", en: "英語", ja: "日語", ko: "韓語", fr: "法語", de: "德語",
+    es: "西班牙語", pt: "葡萄牙語", ru: "俄語", vi: "越南語", hi: "印地語",
+    ar: "阿拉伯語", it: "義大利語",
+  },
+  en: {
+    zh: "Chinese", en: "English", ja: "Japanese", ko: "Korean", fr: "French", de: "German",
+    es: "Spanish", pt: "Portuguese", ru: "Russian", vi: "Vietnamese", hi: "Hindi",
+    ar: "Arabic", it: "Italian",
+  },
+};
+
+/** 语种名（以当前语种显示），缺失时回退英文。 */
+export function languageName(pack: MessagePack, lang: LangCode): string {
+  return LANGUAGE_NAMES[pack]?.[lang] ?? LANGUAGE_NAMES.en![lang] ?? lang;
+}
+
+// ---------- 分组（按语种） ----------
+
+export interface LocaleGroup {
+  lang: LangCode;
+  label: string;
+  locales: LocaleDef[];
+}
+
+/**
+ * 国别按语种分组：组按当前界面语言下的语种名 A–Z 排序，组内按国家 ISO 码升序，
+ * 当前语言组置顶（组内当前 locale 放首位）。
+ */
+export function groupedLocales(currentLocaleId: string, pack: MessagePack): LocaleGroup[] {
+  const byLang = new Map<LangCode, LocaleDef[]>();
+  for (const locale of LOCALES) {
+    const list = byLang.get(locale.lang);
+    if (list) list.push(locale);
+    else byLang.set(locale.lang, [locale]);
+  }
+
+  const groups: LocaleGroup[] = [...byLang.entries()].map(([lang, items]) => ({
+    lang,
+    label: languageName(pack, lang),
+    locales: [...items].sort((a, b) => a.country.localeCompare(b.country)),
+  }));
+
+  const collator = new Intl.Collator(currentLocaleId || "en", { sensitivity: "base" });
+  groups.sort((a, b) => collator.compare(a.label, b.label));
+
+  const current = findLocale(currentLocaleId);
+  const index = groups.findIndex((group) => group.lang === current.lang);
+  if (index > 0) {
+    const [pinned] = groups.splice(index, 1);
+    groups.unshift(pinned);
+  }
+
+  const currentGroup = groups.find((group) => group.lang === current.lang);
+  if (currentGroup) {
+    const at = currentGroup.locales.findIndex((locale) => locale.id === current.id);
+    if (at > 0) {
+      const [entry] = currentGroup.locales.splice(at, 1);
+      currentGroup.locales.unshift(entry);
+    }
+  }
+
+  return groups;
 }
 
 // ---------- 核心文案 ----------

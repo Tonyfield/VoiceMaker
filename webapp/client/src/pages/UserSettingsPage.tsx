@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Form, Input, Select, Typography, message } from "antd";
+import { Button, Form, Input, Select, Typography, message } from "antd";
 import {
   changePassword,
   getPreferences,
@@ -11,6 +11,7 @@ import { useAuth } from "../auth";
 import { useTheme } from "../theme";
 import { textPrimaryOn } from "../themes";
 import { useI18n } from "../i18n";
+import SettingsCard from "../components/settings/SettingsCard";
 
 /** 可选保留期（天）：1周/2周/3周/1个月/3个月/6个月/9个月/12个月。 */
 const RETENTION_DAYS = [7, 14, 21, 30, 90, 180, 270, 365];
@@ -60,16 +61,17 @@ export default function UserSettingsPage() {
         {t("nav.settings")}
       </Typography.Title>
 
-      <Card className="flat-card" title={t("settings.account")} style={{ borderRadius: 16, marginBottom: 16 }}>
+      <SettingsCard title={t("settings.account")} style={{ marginBottom: 16 }}>
         <Typography.Text>{t("settings.currentUser")}</Typography.Text>
         <Typography.Text strong>{user?.username}</Typography.Text>
-      </Card>
+      </SettingsCard>
 
-      <Card className="flat-card" title={t("pref.retention")} style={{ borderRadius: 16, marginBottom: 16 }}>
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          {t("pref.retentionHint")}
-        </Typography.Text>
-        <div style={{ display: "flex", gap: 16, marginTop: 12, flexWrap: "wrap" }}>
+      <SettingsCard
+        title={t("pref.retention")}
+        subtitle={t("pref.retentionHint")}
+        style={{ marginBottom: 16 }}
+      >
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
           <div>
             <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 4 }}>
               {t("pref.retentionMode")}
@@ -98,9 +100,9 @@ export default function UserSettingsPage() {
             />
           </div>
         </div>
-      </Card>
+      </SettingsCard>
 
-      <Card className="flat-card" title={t("settings.password")} style={{ borderRadius: 16 }}>
+      <SettingsCard title={t("settings.password")}>
         <Form layout="vertical" onFinish={onSave}>
           <Form.Item name="oldPassword" label={t("settings.oldPassword")} rules={[{ required: true, message: t("settings.oldRequired") }]}>
             <Input.Password variant="outlined" />
@@ -132,7 +134,7 @@ export default function UserSettingsPage() {
             {t("act.save")}
           </Button>
         </Form>
-      </Card>
+      </SettingsCard>
     </div>
   );
 }

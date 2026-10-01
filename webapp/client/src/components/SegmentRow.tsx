@@ -27,6 +27,9 @@ const ED_STYLE: CSSProperties = {
   wordBreak: "break-word",
 };
 
+/** 编辑框最多显示 8 行（22px/行 + 上下 padding 8px + 上下边框 2px），超出由外层容器滚动。 */
+const EDITOR_MAX_HEIGHT = 8 * 22 + 8 + 2;
+
 interface Selection {
   start: number;
   end: number;
@@ -100,6 +103,17 @@ export default function SegmentRow({
   const audioUrl = audioName ? `${taskFileUrl(taskId, audioName)}?t=${audioVersion}` : null;
   const marks = useMemo(() => parseMarks(phonetic), [phonetic]);
   const segs = useMemo(() => renderSegments(text, marks), [text, marks]);
+  // 已注音片段在原文中的字符区间（用于按光标位置判定点击了哪个注音）。
+  const markedRanges = useMemo(() => {
+    let offset = 0;
+    const ranges: Array<{ start: number; end: number; markIndex: number }> = [];
+    for (const seg of segs) {
+      const start = offset;
+      offset += seg.text.length;
+      if (seg.marked) ranges.push({ start, end: offset, markIndex: seg.markIndex });
+    }
+    return ranges;
+  }, [segs]);
 
   const syncSelection = (ta: HTMLTextAreaElement) => {
     const s = ta.selectionStart ?? 0;
@@ -239,6 +253,15 @@ export default function SegmentRow({
     setAnnotate({ mode: "edit", markIndex });
     setPyInput(marks[markIndex]?.pinyin ?? "");
     setSelection(null);
+  };
+
+  // 高亮层位于文本域下方（只画背景），无法直接接收点击；改为按光标位置判定是否点中了某个注音片段。
+  const handleCaret = (ta: HTMLTextAreaElement) => {
+    syncSelection(ta);
+    const start = ta.selectionStart ?? 0;
+    if ((ta.selectionEnd ?? 0) !== start) return;
+    const range = markedRanges.find((item) => start >= item.start && start < item.end);
+    if (range) editExisting(range.markIndex);
   };
 
   /** 点赞：再次点击取消。 */
@@ -402,88 +425,84 @@ export default function SegmentRow({
 
       {viewMode === "text" ? (
         <div style={{ position: "relative" }}>
-        <div
-          aria-hidden
-          style={{
-            ...ED_STYLE,
-            position: "absolute",
-            inset: 0,
-            zIndex: 3,
-            pointerEvents: "none",
-            overflow: "hidden",
-            color: token.colorText,
-          }}
-        >
-          {segs.map((s, i) =>
-            s.marked ? (
-              <Tooltip key={i} title={t("seg.pinyinTooltip", { pinyin: s.pinyin })}>
-                <span
-                  style={{
-                    pointerEvents: "auto",
-                    cursor: "pointer",
-                    background: token.colorPrimaryBg,
-                    borderBottom: `2px solid ${token.colorPrimaryBorder}`,
-                    color: token.colorPrimaryText,
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    padding: "0 1px",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    editExisting(s.markIndex);
-                  }}
-                >
-                  {s.text}
-                </span>
-              </Tooltip>
-            ) : (
-              <span key={i}>{s.text}</span>
-            )
-          )}
-          {segs.length === 0 && (
-            <Typography.Text type="secondary" style={{ fontSize: 13 }}>{text}</Typography.Text>
-          )}
-        </div>
+          {/* 单个滚动容器：高亮层与文本域同宽、随容器一起滚动，保证换行与选区完全对齐 */}
+          <div style={{ position: "relative", maxHeight: EDITOR_MAX_HEIGHT, overflowY: "auto" }}>
+            <div
+              aria-hidden
+              style={{
+                ...ED_STYLE,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 0,
+                pointerEvents: "none",
+                // 与文本域 1px 边框对齐；文字透明，只画注音高亮的背景/下划线
+                border: "1px solid transparent",
+                color: "transparent",
+              }}
+            >
+              {segs.map((s, i) =>
+                s.marked ? (
+                  <span
+                    key={i}
+                    style={{
+                      background: token.colorPrimaryBg,
+                      borderBottom: `2px solid ${token.colorPrimaryBorder}`,
+                      borderRadius: 3,
+                    }}
+                  >
+                    {s.text}
+                  </span>
+                ) : (
+                  <span key={i}>{s.text}</span>
+                )
+              )}
+              {segs.length === 0 && <span>{text}</span>}
+            </div>
 
-        <TextArea
-          value={text}
-          onChange={(e) => {
-            const nextText = e.target.value;
-            setText(nextText);
-            setPhonetic((current) => marksToXml(parseMarks(current), nextText));
-          }}
-          onMouseUp={(e) => syncSelection(e.currentTarget)}
-          onKeyUp={(e) => syncSelection(e.currentTarget as HTMLTextAreaElement)}
-          autoSize={{ minRows: 1, maxRows: 8 }}
-          style={{
-            ...ED_STYLE,
-            color: "transparent",
-            caretColor: token.colorText,
-            background: "transparent",
-          }}
-        />
-
-        {(selection || annotate) && (
-          <div
-            ref={popRef}
-            onMouseDown={(e) => e.stopPropagation()}
-            style={{
-              position: "absolute",
-              bottom: "100%",
-              left: 0,
-              right: 0,
-              marginBottom: 6,
-              zIndex: 20,
-              background: token.colorBgElevated,
-              border: `1px solid ${token.colorBorderSecondary}`,
-              borderRadius: token.borderRadiusLG,
-              padding: 10,
-              boxShadow: token.boxShadowTertiary,
-            }}
-          >
-            {annotate ? annotateBar : menuBar}
+            <TextArea
+              value={text}
+              onChange={(e) => {
+                const nextText = e.target.value;
+                setText(nextText);
+                setPhonetic((current) => marksToXml(parseMarks(current), nextText));
+              }}
+              onMouseUp={(e) => handleCaret(e.currentTarget)}
+              onKeyUp={(e) => syncSelection(e.currentTarget as HTMLTextAreaElement)}
+              autoSize={{ minRows: 1 }}
+              style={{
+                ...ED_STYLE,
+                position: "relative",
+                zIndex: 1,
+                color: token.colorText,
+                caretColor: token.colorText,
+                background: "transparent",
+              }}
+            />
           </div>
-        )}
+
+          {(selection || annotate) && (
+            <div
+              ref={popRef}
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: 0,
+                right: 0,
+                marginBottom: 6,
+                zIndex: 20,
+                background: token.colorBgElevated,
+                border: `1px solid ${token.colorBorderSecondary}`,
+                borderRadius: token.borderRadiusLG,
+                padding: 10,
+                boxShadow: token.boxShadowTertiary,
+              }}
+            >
+              {annotate ? annotateBar : menuBar}
+            </div>
+          )}
         </div>
       ) : viewMode === "segment" ? (
         <pre className="segment-source-code">

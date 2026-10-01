@@ -4,14 +4,16 @@ import { BrowserRouter } from "react-router-dom";
 import { ConfigProvider, theme as antdTheme } from "antd";
 import App from "./App";
 import { AuthProvider } from "./auth";
-import { ThemeProvider, useTheme } from "./theme";
+import { ThemeProvider, useTheme, findFontFamily, fontGroupForPack } from "./theme";
+import { ensureFontsLoaded } from "./fonts";
 import { I18nProvider, useI18n } from "./i18n";
 import { DEFAULT_ANTD_LOCALE, loadAntdLocale } from "./i18n/antdLocale";
 import { textOnPrimary, textPrimaryOn } from "./themes";
 import "./index.css";
 
 function ThemedApp() {
-  const { palette, fontScale } = useTheme();
+  const { palette, fontScale, fontFamilyId, setFontFamilyId } = useTheme();
+  const fontFamily = findFontFamily(fontFamilyId);
   const { locale } = useI18n();
   // antd 组件内置文案按需加载：默认中文，切换到其他语种时再拉取对应语言包。
   const [antdLocale, setAntdLocale] = useState(DEFAULT_ANTD_LOCALE);
@@ -52,8 +54,9 @@ function ThemedApp() {
         "--vc-border": palette.dark ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.08)",
         "--vc-code-bg": palette.dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.035)",
         "--vc-code-text": palette.dark ? "rgba(255,255,255,0.78)" : "rgba(0,0,0,0.72)",
+        "--vc-font": fontFamily.stack,
       }) as CSSProperties,
-    [palette, primaryText, onPrimary, errorColor]
+    [palette, primaryText, onPrimary, errorColor, fontFamily.stack]
   );
 
   useEffect(() => {
@@ -75,6 +78,14 @@ function ThemedApp() {
     };
   }, [fontScale]);
 
+  // 按界面语种加载对应字体组；已选字体若不属于当前语种分组则回退系统默认。
+  useEffect(() => {
+    const group = fontGroupForPack(locale.pack);
+    void ensureFontsLoaded(group);
+    const current = findFontFamily(fontFamilyId);
+    if (current.group !== "system" && current.group !== group) setFontFamilyId("system");
+  }, [locale.pack, fontFamilyId, setFontFamilyId]);
+
   return (
     <ConfigProvider
       locale={antdLocale}
@@ -82,6 +93,7 @@ function ThemedApp() {
       theme={{
         algorithm: palette.dark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {
+          fontFamily: fontFamily.stack,
           fontSize: Math.round(14 * fontScale),
           fontSizeSM: Math.round(12 * fontScale),
           fontSizeLG: Math.round(16 * fontScale),

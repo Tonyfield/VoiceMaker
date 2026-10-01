@@ -1,14 +1,16 @@
 import type { Messages } from "../locales";
 
 const en: Messages = {
-  "nav.tasks": "Tasks", "nav.models": "Models", "nav.voices": "Voices", "nav.settings": "Settings",
-  "nav.logout": "Sign out", "nav.home": "Home", "nav.settingsPage": "Settings", "act.back": "Back", "settings.display": "Display", "pref.fontSize": "Font size", "pref.fontSizeHint": "Adjust the interface text size", "pref.retention": "Audio retention", "pref.retentionHint": "How long generated audio is kept, and what to delete when it expires", "pref.retentionMode": "Deletion mode", "pref.retentionModeAll": "Delete all", "pref.retentionModeUnused": "Delete unused", "pref.week": "wk", "pref.month": "mo", "nav.transfer": "Transfer", "transfer.empty": "No transfer jobs", "transfer.download": "Download", "transfer.logs": "Logs", "transfer.statusQueued": "Queued", "transfer.statusRunning": "Running", "transfer.statusDone": "Done", "transfer.statusError": "Failed", "transfer.exportStarted": "Export started; check progress on the Transfer page", "transfer.cleanupStarted": "Cleanup started; check progress on the Transfer page", "cleanup.confirmTitle": "Confirm deleting all segment audio", "cleanup.confirmHint": "This cannot be undone. Type delete to confirm.", "act.add": "Add", "act.save": "Save", "act.cancel": "Cancel",
+  "nav.tasks": "Tasks", "nav.groupResources": "Resources", "nav.models": "TTS models", "nav.voices": "Voice samples", "nav.settings": "Settings",
+  "langname.zh": "Chinese", "langname.en": "English", "langname.ja": "Japanese", "langname.ko": "Korean", "langname.fr": "French", "langname.de": "German",
+  "langname.es": "Spanish", "langname.pt": "Portuguese", "langname.ru": "Russian", "langname.vi": "Vietnamese", "langname.hi": "Hindi", "langname.ar": "Arabic", "langname.it": "Italian",
+  "nav.logout": "Sign out", "nav.home": "Home", "nav.settingsPage": "Settings", "act.back": "Back", "settings.display": "Display", "pref.fontFamily": "Interface font", "pref.fontFamilyHint": "Choose the interface font (varies by UI language)", "font.system": "System default", "font.noto-sans-sc": "Noto Sans SC", "font.lxgw-wenkai": "LXGW WenKai", "font.zcool-kuaile": "ZCOOL KuaiLe", "font.zcool-qingke-huangyou": "ZCOOL QingKe HuangYou", "font.smiley-sans": "Smiley Sans", "font.m-plus-rounded-1c": "M PLUS Rounded 1c", "font.zen-maru-gothic": "Zen Maru Gothic", "font.nunito": "Nunito", "font.quicksand": "Quicksand", "font.baloo-2": "Baloo 2", "font.fredoka": "Fredoka", "pref.fontSize": "Font size", "pref.fontSizeHint": "Adjust the interface text size", "pref.retention": "Audio retention", "pref.retentionHint": "How long generated audio is kept, and what to delete when it expires", "pref.retentionMode": "Deletion mode", "pref.retentionModeAll": "Delete all", "pref.retentionModeUnused": "Delete unused", "pref.week": "wk", "pref.month": "mo", "nav.transfer": "Transfer", "transfer.empty": "No transfer jobs", "transfer.download": "Download", "transfer.logs": "Logs", "transfer.statusQueued": "Queued", "transfer.statusRunning": "Running", "transfer.statusDone": "Done", "transfer.statusError": "Failed", "transfer.exportStarted": "Export started; check progress on the Transfer page", "transfer.cleanupStarted": "Cleanup started; check progress on the Transfer page", "cleanup.confirmTitle": "Confirm deleting all segment audio", "cleanup.confirmHint": "This cannot be undone. Type delete to confirm.", "act.add": "Add", "act.save": "Save", "act.cancel": "Cancel",
   "act.delete": "Delete", "act.reset": "Reset", "act.run": "Run", "act.pause": "Pause",
   "act.resume": "Resume", "act.apply": "Apply", "act.login": "Sign in", "act.search": "Search",
   "st.idle": "Idle", "st.segmenting": "Segmenting", "st.ready": "Ready", "st.running": "Synthesizing",
   "st.paused": "Paused", "st.done": "Done", "st.error": "Error", "task.name": "Task name",
   "task.model": "TTS model", "task.document": "Document", "task.voice": "Voice sample",
-  "task.segmentOnly": "Segment only", "tab.input": "Input", "tab.output": "Output",
+  "task.segmentOnly": "Segment only", "detail.tabWorkbench": "Workbench", "detail.tabTransfer": "Transfer", "tab.input": "Input", "tab.output": "Output",
   "tab.segment": "Segmentation", "tab.phonetic": "Phonetics", "tab.instruction": "Instructions",
   "tab.emotion": "Emotion", "tab.advanced": "Advanced", "dlg.newTask": "New task",
   "dlg.editTask": "Edit task", "pref.language": "Language",
@@ -28,7 +30,7 @@ const en: Messages = {
   "task.confirmDelete": "Delete this task?",
   "task.confirmDeleteDesc": "All server-side files will be removed",
   "act.edit": "Edit", "act.close": "Close", "act.submit": "Submit", "act.upload": "Upload", "act.refresh": "Refresh",
-  "act.retry": "Retry", "act.clear": "Clear", "act.remove": "Remove", "act.more": "More", "act.collapse": "Collapse",
+  "act.retry": "Retry", "act.clear": "Clear", "act.remove": "Remove", "act.more": "More", "act.collapse": "Collapse", "act.expand": "Expand",
   "act.selectAll": "Select all", "act.deselectAll": "Deselect all",
   "login.subtitle": "Sign in to continue", "login.username": "Username", "login.password": "Password",
   "login.usernameRequired": "Please enter your username", "login.passwordRequired": "Please enter your password",

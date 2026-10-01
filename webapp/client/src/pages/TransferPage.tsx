@@ -21,19 +21,22 @@ const STATUS_COLOR: Record<JobStatus, string> = {
   error: "error",
 };
 
-/** 文件传输：后台导出/清理任务的进度（百分比 + 已处理/总数）与日志。 */
-export default function TransferPage() {
+/**
+ * 文件传输：后台导出/清理任务的进度（百分比 + 已处理/总数）与日志。
+ * 传入 taskId 时只显示该任务的任务（任务工作区页签内使用）。
+ */
+export default function TransferPage({ taskId }: { taskId?: number }) {
   const { t } = useI18n();
   const [jobs, setJobs] = useState<JobRecord[]>([]);
   const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      setJobs(await listJobs());
+      setJobs(await listJobs(taskId));
     } catch (error) {
       message.error(getErrorMessage(error, t("error.request")));
     }
-  }, [t]);
+  }, [t, taskId]);
 
   useEffect(() => {
     void refresh();

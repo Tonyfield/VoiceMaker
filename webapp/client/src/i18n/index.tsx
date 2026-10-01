@@ -103,5 +103,5 @@ export function useI18n(): I18nValue {
   return ctx;
 }
 
-export { flagUrl, countryName, findLocale } from "./locales";
-export type { LocaleDef } from "./locales";
+export { flagUrl, countryName, findLocale, groupedLocales, languageName } from "./locales";
+export type { LocaleDef, LocaleGroup } from "./locales";

@@ -1,13 +1,15 @@
 import type { Messages } from "../locales";
 
 const zhTW: Messages = {
-  "nav.tasks": "工作任務", "nav.models": "模型設定", "nav.voices": "聲音設定", "nav.settings": "使用者設定",
-  "nav.logout": "登出", "nav.home": "主頁面", "nav.settingsPage": "設定", "act.back": "返回", "settings.display": "顯示設定", "pref.fontSize": "字體字號", "pref.fontSizeHint": "調整介面文字大小", "pref.retention": "音訊保留", "pref.retentionHint": "後台保留生成音訊的時長與到期刪除口徑", "pref.retentionMode": "刪除口徑", "pref.retentionModeAll": "刪除全部", "pref.retentionModeUnused": "刪除無用", "pref.week": "週", "pref.month": "個月", "nav.transfer": "檔案傳輸", "transfer.empty": "暫無傳輸任務", "transfer.download": "下載", "transfer.logs": "日誌", "transfer.statusQueued": "排隊中", "transfer.statusRunning": "進行中", "transfer.statusDone": "已完成", "transfer.statusError": "失敗", "transfer.exportStarted": "已開始匯出，請在「檔案傳輸」頁查看進度", "transfer.cleanupStarted": "已開始清理，請在「檔案傳輸」頁查看進度", "cleanup.confirmTitle": "確認刪除全部分段音訊", "cleanup.confirmHint": "此操作不可撤銷。請輸入 delete 以確認。", "act.add": "新增", "act.save": "儲存", "act.cancel": "取消", "act.delete": "刪除",
+  "nav.tasks": "工作任務", "nav.groupResources": "資源", "nav.models": "TTS 模型", "nav.voices": "聲音樣本", "nav.settings": "使用者設定",
+  "langname.zh": "漢語", "langname.en": "英語", "langname.ja": "日語", "langname.ko": "韓語", "langname.fr": "法語", "langname.de": "德語",
+  "langname.es": "西班牙語", "langname.pt": "葡萄牙語", "langname.ru": "俄語", "langname.vi": "越南語", "langname.hi": "印地語", "langname.ar": "阿拉伯語", "langname.it": "義大利語",
+  "nav.logout": "登出", "nav.home": "主頁面", "nav.settingsPage": "設定", "act.back": "返回", "settings.display": "顯示設定", "pref.fontFamily": "介面字體", "pref.fontFamilyHint": "選擇介面使用的字體（依當前語種提供）", "font.system": "系統預設", "font.noto-sans-sc": "思源黑體", "font.lxgw-wenkai": "霞鶩文楷", "font.zcool-kuaile": "站酷快樂體", "font.zcool-qingke-huangyou": "站酷慶科黃油體", "font.smiley-sans": "得意黑", "font.m-plus-rounded-1c": "M PLUS Rounded 1c", "font.zen-maru-gothic": "Zen Maru Gothic", "font.nunito": "Nunito", "font.quicksand": "Quicksand", "font.baloo-2": "Baloo 2", "font.fredoka": "Fredoka", "pref.fontSize": "字號", "pref.fontSizeHint": "調整介面文字大小", "pref.retention": "音訊保留", "pref.retentionHint": "後台保留生成音訊的時長與到期刪除口徑", "pref.retentionMode": "刪除口徑", "pref.retentionModeAll": "刪除全部", "pref.retentionModeUnused": "刪除無用", "pref.week": "週", "pref.month": "個月", "nav.transfer": "檔案傳輸", "transfer.empty": "暫無傳輸任務", "transfer.download": "下載", "transfer.logs": "日誌", "transfer.statusQueued": "排隊中", "transfer.statusRunning": "進行中", "transfer.statusDone": "已完成", "transfer.statusError": "失敗", "transfer.exportStarted": "已開始匯出，請在「檔案傳輸」頁查看進度", "transfer.cleanupStarted": "已開始清理，請在「檔案傳輸」頁查看進度", "cleanup.confirmTitle": "確認刪除全部分段音訊", "cleanup.confirmHint": "此操作不可撤銷。請輸入 delete 以確認。", "act.add": "新增", "act.save": "儲存", "act.cancel": "取消", "act.delete": "刪除",
   "act.reset": "重設", "act.run": "執行", "act.pause": "暫停", "act.resume": "繼續", "act.apply": "套用",
   "act.login": "登入", "act.search": "搜尋", "st.idle": "閒置", "st.segmenting": "分段中", "st.ready": "待合成",
   "st.running": "合成中", "st.paused": "已暫停", "st.done": "完成", "st.error": "錯誤", "task.name": "任務名稱",
   "task.model": "TTS 模型", "task.document": "文件", "task.voice": "聲音樣本", "task.segmentOnly": "僅分段",
-  "tab.input": "輸入", "tab.output": "輸出", "tab.segment": "分段參數", "tab.phonetic": "注音參數",
+  "detail.tabWorkbench": "工作台", "detail.tabTransfer": "檔案傳輸", "tab.input": "輸入", "tab.output": "輸出", "tab.segment": "分段參數", "tab.phonetic": "注音參數",
   "tab.instruction": "合成指令", "tab.emotion": "感情", "tab.advanced": "進階", "dlg.newTask": "新增任務",
   "dlg.editTask": "編輯任務", "pref.language": "語言", "pref.languageHint": "介面顯示語言（預設跟隨系統）",
   "task.saved": "任務已儲存", "task.deleted": "任務已刪除",
@@ -19,7 +21,7 @@ const zhTW: Messages = {
   "task.meta": "最近修改：{time} · 段落：{count}",
   "task.confirmDelete": "確定刪除此任務？", "task.confirmDeleteDesc": "伺服器上的所有檔案將被刪除",
   "act.edit": "編輯", "act.close": "關閉", "act.submit": "提交", "act.upload": "上傳", "act.refresh": "重新整理",
-  "act.retry": "重試", "act.clear": "清除", "act.remove": "移除", "act.more": "更多", "act.collapse": "收合",
+  "act.retry": "重試", "act.clear": "清除", "act.remove": "移除", "act.more": "更多", "act.collapse": "收合", "act.expand": "展開",
   "act.selectAll": "全部選取", "act.deselectAll": "取消全選",
   "login.subtitle": "登入以繼續", "login.username": "使用者名稱", "login.password": "密碼",
   "login.usernameRequired": "請輸入使用者名稱", "login.passwordRequired": "請輸入密碼", "login.failed": "登入失敗",

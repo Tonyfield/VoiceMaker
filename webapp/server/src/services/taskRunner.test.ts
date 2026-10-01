@@ -543,7 +543,19 @@ test("synthesizeSegment sends the expected request payload and writes <key>-<has
   const taskId = taskService.create({
     name: uniqueName("task-runner-synthesize-segment"),
     model_id: modelId,
-    params_json: JSON.stringify({ api_key: "request-key", custom_option: "custom-value" }),
+    params_json: JSON.stringify({
+      api_key: "request-key",
+      custom_option: "custom-value",
+      // 程序侧文本增强开关：不得作为 TTS 参数发送
+      interjection_prefix_enabled: true,
+      interjection_prefix: "-",
+      word_gap_enabled: true,
+      word_gap: "-",
+      punct_comma_enabled: false,
+      text_rules: [{ pattern: "[。]", position: "after", insert: "\n" }],
+      epub_start: 1,
+      epub_end: 5,
+    }),
   });
   const originalSetStatus = taskService.setStatus;
   const originalFetch = globalThis.fetch;
@@ -580,8 +592,22 @@ test("synthesizeSegment sends the expected request payload and writes <key>-<has
     const payload = JSON.parse(capturedBody) as Record<string, unknown>;
     assert.equal(payload.input, "segment 001");
     assert.equal(payload.model, modelName);
+    // 自定义参数仍然按 extra_params 透传；程序内部开关不得出现在 payload 的任何位置
     assert.deepEqual(payload.extra_params, { custom_option: "custom-value" });
     assert.equal("api_key" in payload, false);
+    const serialized = JSON.stringify(payload);
+    for (const internalKey of [
+      "interjection_prefix_enabled",
+      "interjection_prefix",
+      "word_gap_enabled",
+      "word_gap",
+      "punct_comma_enabled",
+      "text_rules",
+      "epub_start",
+      "epub_end",
+    ]) {
+      assert.equal(serialized.includes(internalKey), false, `不应发送 ${internalKey}`);
+    }
   } finally {
     taskService.setStatus = originalSetStatus;
     globalThis.fetch = originalFetch;

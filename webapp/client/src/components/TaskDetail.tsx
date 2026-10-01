@@ -696,7 +696,7 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
         keys: scope === "selected" ? [...selected] : undefined,
       });
       message.success(tr("transfer.exportStarted"));
-      navigate("/transfer");
+      navigate(`/tasks/${taskId}?tab=transfer`);
     } catch (error) {
       message.error(getErrorMessage(error, tr("error.request")));
     } finally {
@@ -709,7 +709,7 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
     try {
       await createCleanupJob(taskId, mode);
       message.success(tr("transfer.cleanupStarted"));
-      navigate("/transfer");
+      navigate(`/tasks/${taskId}?tab=transfer`);
     } catch (error) {
       message.error(getErrorMessage(error, tr("error.request")));
     }
@@ -1036,7 +1036,7 @@ export default function TaskDetail({ taskId, taskName, skipTts, onClose }: {
   }, [info?.maxChars]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 48px)", minHeight: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flex: "0 0 auto" }}>
         <Button icon={<ArrowLeftOutlined />} onClick={onClose}>{tr("act.back")}</Button>
         <Typography.Text strong style={{ fontSize: 16 }}>{tr("detail.title", { name: taskName })}</Typography.Text>

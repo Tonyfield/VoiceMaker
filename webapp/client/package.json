@@ -1,6 +1,6 @@
 {
   "name": "voicecloner-client",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontpkg/smiley-sans": "^2.0.4",
+    "@fontsource/baloo-2": "^5.3.0",
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/lxgw-wenkai": "^5.3.0",
+    "@fontsource/m-plus-rounded-1c": "^5.3.0",
+    "@fontsource/noto-sans-sc": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/quicksand": "^5.3.0",
+    "@fontsource/zcool-kuaile": "^5.3.0",
+    "@fontsource/zcool-qingke-huangyou": "^5.3.0",
+    "@fontsource/zen-maru-gothic": "^5.3.0",
     "antd": "^5.19.0",
     "axios": "^1.7.2",
     "rc-virtual-list": "^3.19.2",

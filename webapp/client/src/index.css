@@ -2,7 +2,14 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: var(
+    --vc-font,
+    -apple-system,
+    "Segoe UI",
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif
+  );
   background: transparent;
 }
 
@@ -14,13 +21,22 @@ body {
 }
 
 .sider {
-  width: 240px;
   flex-shrink: 0;
 }
 
+/* 收起时隐藏菜单分组标题，避免窄栏里文字溢出 */
+.ant-layout-sider-collapsed .ant-menu-item-group-title {
+  display: none;
+}
+
+/* 外壳固定为一屏高、不随内容撑高；仅内容区内部滚动，
+   保证左侧栏与底部按钮始终留在窗口内。 */
 .content-area {
   flex: 1;
+  height: 100%;
+  min-height: 0;
   padding: 24px 28px;
+  overflow: auto;
 }
 
 .brand-card {
@@ -34,6 +50,41 @@ body {
   margin: 0 0 16px;
   font-size: 20px;
   font-weight: 600;
+}
+
+/* 任务工作区顶部页签：占满高度，工作台面板内部自管滚动 */
+.task-workspace-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-workspace-tabs > .ant-tabs-nav {
+  flex: 0 0 auto;
+  margin-bottom: 12px;
+}
+
+.task-workspace-tabs > .ant-tabs-content-holder {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.task-workspace-tabs .ant-tabs-content {
+  height: 100%;
+}
+
+.task-workspace-tabs .ant-tabs-tabpane {
+  height: 100%;
+  min-height: 0;
+}
+
+.task-workspace-pane {
+  height: 100%;
+  overflow: auto;
+}
+
+.sider-footer .ant-btn {
+  font-size: 12px;
 }
 
 .task-form .ant-form-item {
